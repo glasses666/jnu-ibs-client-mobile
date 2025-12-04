@@ -43,7 +43,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Debug: List APK Output
+      - name: Debug List APK Output
         run: ls -R android/app/build/outputs/apk/
 
       - name: Upload APK
