@@ -679,6 +679,53 @@ const App: React.FC = () => {
               </button>
           </header>
 
+          {activeTab === 'overview' && !overview && (
+              <div className="space-y-6 animate-pulse">
+                  {/* Skeleton Master Card */}
+                  <div className="rounded-[32px] bg-gray-200 dark:bg-gray-800 h-[220px] p-8 flex flex-col justify-between">
+                      <div className="flex justify-between items-start">
+                          <div className="space-y-3">
+                              <div className="h-4 w-24 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                              <div className="h-10 w-48 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                          </div>
+                          <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                      </div>
+                      <div className="flex justify-between items-end">
+                          <div className="space-y-2">
+                              <div className="h-3 w-20 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                              <div className="h-6 w-32 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                          </div>
+                          <div className="h-8 w-28 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                      </div>
+                  </div>
+
+                  {/* Skeleton Toggles */}
+                  <div className="flex justify-end gap-3">
+                      <div className="h-8 w-32 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+                      <div className="h-8 w-32 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+                  </div>
+
+                  {/* Skeleton Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[1, 2, 3].map(i => (
+                          <div key={i} className="bg-white dark:bg-gray-800 rounded-3xl p-5 h-32 flex flex-col justify-between border border-gray-100 dark:border-gray-800">
+                              <div className="flex justify-between">
+                                  <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-gray-700"></div>
+                                  <div className="w-12 h-5 rounded-full bg-gray-100 dark:bg-gray-700"></div>
+                              </div>
+                              <div className="space-y-2">
+                                  <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                  <div className="flex justify-between">
+                                      <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                      <div className="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                  </div>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              </div>
+          )}
+
           {activeTab === 'overview' && overview && (
               <div className="animate-fade-in space-y-6">
                   {/* Master Card - "Apple Wallet" Style */}
@@ -714,43 +761,43 @@ const App: React.FC = () => {
                           
                           <button 
                             onClick={() => setShowCalculator(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10 text-xs font-bold uppercase tracking-wide"
+                            className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/10 active:scale-95"
                           >
-                              <Calculator size={14} />
-                              <span>{t.calculator}</span>
+                              <Calculator size={14} className="shrink-0" />
+                              <span className="text-[10px] md:text-xs font-bold uppercase tracking-wide whitespace-nowrap">{t.calculator}</span>
                           </button>
                       </div>
                   </div>
                   
                   {/* Toggles (Currency & Unit) */}
-                  <div className="flex justify-end gap-3">
+                  <div className="flex justify-end gap-3 animate-fade-in-up delay-100">
                       {/* Currency Toggle */}
-                      <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl inline-flex">
+                      <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl inline-flex transition-colors duration-300">
                           <button 
                              onClick={() => setCurrency('CNY')}
-                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${currency === 'CNY' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
+                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${currency === 'CNY' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
                           >
                              {t.currencyCNY}
                           </button>
                           <button 
                              onClick={() => setCurrency('USD')}
-                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${currency === 'USD' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
+                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${currency === 'USD' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
                           >
                              {t.currencyUSD}
                           </button>
                       </div>
 
                       {/* Display Unit Toggle */}
-                      <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl inline-flex">
+                      <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl inline-flex transition-colors duration-300">
                           <button 
                              onClick={() => setDisplayUnit('money')}
-                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${displayUnit === 'money' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
+                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${displayUnit === 'money' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
                           >
                              {t.showMoney}
                           </button>
                           <button 
                              onClick={() => setDisplayUnit('unit')}
-                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${displayUnit === 'unit' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
+                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${displayUnit === 'unit' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
                           >
                              {t.showUnit}
                           </button>
@@ -758,7 +805,7 @@ const App: React.FC = () => {
                   </div>
 
                   {/* Details Grid - Bento Style */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in-up delay-200">
                       <DataCard 
                           title={t.electricity}
                           value={displayUnit === 'money' ? formatMoney(overview.costs.elec) : `${overview.details.elec[0]} ${t.unitKwh}`}
@@ -1117,7 +1164,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-6 left-4 right-4 bg-gray-900/90 dark:bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/20 z-50 p-2 flex justify-between items-center text-gray-400 dark:text-gray-500">
+      <div className="lg:hidden fixed bottom-6 left-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/40 z-50 p-2 flex justify-between items-center text-gray-400 dark:text-gray-500 transition-all duration-300">
         <MobileNavItem icon={<LayoutDashboard size={22} strokeWidth={2.5}/>} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
         <MobileNavItem icon={<Activity size={22} strokeWidth={2.5}/>} active={activeTab === 'trends'} onClick={() => setActiveTab('trends')} />
         <MobileNavItem icon={<History size={22} strokeWidth={2.5}/>} active={activeTab === 'records'} onClick={() => setActiveTab('records')} />
