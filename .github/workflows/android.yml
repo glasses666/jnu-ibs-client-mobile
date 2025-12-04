@@ -37,25 +37,16 @@ jobs:
           npx cap add android
           npx cap sync
 
-            - name: Build APK (Debug)
+      - name: Build APK (Debug)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-              run: |
+      - name: Debug: List APK Output
+        run: ls -R android/app/build/outputs/apk/
 
-                cd android
-
-                chmod +x gradlew
-
-                ./gradlew assembleDebug
-
-            
-
-            - name: Debug: List APK Output
-
-              run: ls -R android/app/build/outputs/apk/
-
-      
-
-            - name: Upload APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: jnu-ibs-debug.apk
