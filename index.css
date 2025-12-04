@@ -28,6 +28,16 @@
   .delay-100 { animation-delay: 100ms; }
   .delay-200 { animation-delay: 200ms; }
   .delay-300 { animation-delay: 300ms; }
+  
+  /* Prevent tap highlight color on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Remove focus outline for charts and buttons */
+  *:focus {
+    outline: none !important;
+  }
 }
 
 @keyframes fadeIn {
