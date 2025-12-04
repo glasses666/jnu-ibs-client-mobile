@@ -1164,11 +1164,11 @@ const App: React.FC = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-6 left-4 right-4 bg-white/90 dark:bg-gray-950/85 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl z-50 pt-2 px-6 flex justify-between items-center transition-all duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <MobileNavItem icon={<LayoutDashboard size={24} strokeWidth={activeTab === 'overview' ? 2.5 : 2}/>} label={t.dashboard} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
-        <MobileNavItem icon={<Activity size={24} strokeWidth={activeTab === 'trends' ? 2.5 : 2}/>} label={t.trends} active={activeTab === 'trends'} onClick={() => setActiveTab('trends')} />
-        <MobileNavItem icon={<History size={24} strokeWidth={activeTab === 'records' ? 2.5 : 2}/>} label={t.records} active={activeTab === 'records'} onClick={() => setActiveTab('records')} />
-        <MobileNavItem icon={<Settings size={24} strokeWidth={activeTab === 'settings' ? 2.5 : 2}/>} label={t.settings} active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+      <div className="lg:hidden fixed bottom-6 left-4 right-4 bg-white/90 dark:bg-gray-950/85 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl z-50 p-2 flex justify-between items-center transition-all duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <MobileNavItem icon={<LayoutDashboard size={22} strokeWidth={activeTab === 'overview' ? 2.5 : 2}/>} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+        <MobileNavItem icon={<Activity size={22} strokeWidth={activeTab === 'trends' ? 2.5 : 2}/>} active={activeTab === 'trends'} onClick={() => setActiveTab('trends')} />
+        <MobileNavItem icon={<History size={22} strokeWidth={activeTab === 'records' ? 2.5 : 2}/>} active={activeTab === 'records'} onClick={() => setActiveTab('records')} />
+        <MobileNavItem icon={<Settings size={22} strokeWidth={activeTab === 'settings' ? 2.5 : 2}/>} active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
       </div>
     </div>
   );
@@ -1186,18 +1186,16 @@ const SidebarItem: React.FC<{icon: React.ReactNode, label: string, active: boole
     </button>
 );
 
-const MobileNavItem: React.FC<{icon: React.ReactNode, label: string, active: boolean, onClick: () => void}> = ({ icon, label, active, onClick }) => (
+const MobileNavItem: React.FC<{icon: React.ReactNode, active: boolean, onClick: () => void}> = ({ icon, active, onClick }) => (
     <button 
         onClick={onClick}
-        className={`flex flex-col items-center justify-center gap-1 py-2 px-4 rounded-2xl transition-all duration-300 active:scale-90 ${
+        className={`flex-1 flex items-center justify-center py-3 rounded-xl transition-all duration-300 active:scale-90 ${
             active 
             ? 'text-primary dark:text-white bg-primary/10 dark:bg-white/10' 
             : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
         }`}
     >
         {icon}
-        {/* Optional: Show label only when active, or always small? Let's hide label for cleaner look, or dot? */}
-        {/* Let's add a tiny indicator dot for active state instead of label to save space, or just color is enough. */}
     </button>
 );
 
