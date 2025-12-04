@@ -1099,6 +1099,17 @@ const App: React.FC = () => {
                             </div>
                         )}
                    </div>
+
+                   {/* Logout Button */}
+                   <div className="pt-2">
+                       <button 
+                           onClick={handleLogout}
+                           className="w-full py-4 bg-white dark:bg-gray-800 text-red-500 rounded-[32px] font-bold text-sm shadow-sm border border-gray-100 dark:border-gray-800 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center justify-center gap-2"
+                       >
+                           <LogOut size={18} />
+                           {t.logout}
+                       </button>
+                   </div>
               </div>
           )}
 
