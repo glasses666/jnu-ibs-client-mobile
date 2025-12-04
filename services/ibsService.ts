@@ -1,0 +1,217 @@
+import { API_BASE_URL, RATES } from '../constants';
+import { encryptAndBase64 } from './cryptoUtils';
+import { CapacitorHttp } from '@capacitor/core';
+import { 
+  JNUResponse, 
+  OverviewData, 
+  UserInfoResult, 
+  SubsidyItem, 
+  BillItem, 
+  PaymentRecord, 
+  MetricalDataResult,
+  EnergyType
+} from '../types';
+
+export class IBSService {
+  private userId: string | null = null;
+  private room: string | null = null;
+
+  isLoggedIn(): boolean {
+    return !!this.userId;
+  }
+
+  logout() {
+    this.userId = null;
+    this.room = null;
+  }
+
+  private getHeaders(): any {
+    if (!this.userId) {
+      throw new Error("Not logged in");
+    }
+
+    const now = new Date();
+    // Format: YYYY-MM-DD HH:MM:SS
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const nowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    const tokenPayload = JSON.stringify({
+      userID: this.userId,
+      tokenTime: nowStr
+    });
+
+    const token = encryptAndBase64(tokenPayload);
+
+    return {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) IBSJnuClient/1.0',
+      'Token': token,
+      'DateTime': nowStr
+    };
+  }
+
+  async login(room: string): Promise<boolean> {
+    const cleanRoom = room.toUpperCase();
+    const encryptedRoom = encryptAndBase64(cleanRoom);
+    
+    const payload = {
+      user: cleanRoom,
+      password: encryptedRoom
+    };
+
+    try {
+      // Use CapacitorHttp for Native requests to bypass CORS
+      const response = await CapacitorHttp.post({
+        url: `${API_BASE_URL}Login`,
+        headers: { 'Content-Type': 'application/json' },
+        data: payload
+      });
+
+      if (response.status !== 200) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // CapacitorHttp returns parsed JSON in 'data' if content-type is json
+      const data: JNUResponse<{ customerId: string }> = response.data;
+      
+      if (data.d.Success && data.d.ResultList && data.d.ResultList.length > 0) {
+        this.userId = data.d.ResultList[0].customerId;
+        this.room = cleanRoom;
+        return true;
+      } else {
+        throw new Error(data.d.Msg || 'Login failed');
+      }
+    } catch (error) {
+      console.error("Login Error:", error);
+      throw error;
+    }
+  }
+
+  private async post<T>(endpoint: string, body: any = {}): Promise<JNUResponse<T>> {
+    const response = await CapacitorHttp.post({
+      url: `${API_BASE_URL}${endpoint}`,
+      headers: this.getHeaders(),
+      data: body
+    });
+    
+    if (response.status !== 200) throw new Error(`API Error ${endpoint}: ${response.status}`);
+    return response.data;
+  }
+
+  async fetchOverview(): Promise<OverviewData> {
+    // Parallel requests
+    const [infoRes, allowanceRes, billRes] = await Promise.all([
+      this.post<UserInfoResult>('GetUserInfo'),
+      this.post<SubsidyItem>('GetSubsidy', { startDate: '2000-01-01', endDate: '2099-12-31' }),
+      this.post<BillItem>('GetBillCost', { energyType: 0, startDate: '2000-01-01', endDate: '2099-12-31' })
+    ]);
+
+    return this.parseOverview(infoRes, allowanceRes, billRes);
+  }
+
+  async fetchRecords(page: number = 1, count: number = 20): Promise<PaymentRecord[]> {
+    const payload = { startIdx: (page - 1) * count, recordCount: count };
+    const res = await this.post<PaymentRecord>('GetPaymentRecord', payload);
+    return res.d.ResultList || [];
+  }
+
+  async fetchTrends(year?: number, month?: number): Promise<MetricalDataResult[]> {
+    const targetDate = new Date();
+    if (year) targetDate.setFullYear(year);
+    if (month !== undefined) targetDate.setMonth(month);
+
+    const formatDate = (date: Date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
+
+    const firstDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1);
+    const lastDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0);
+
+    const startDate = formatDate(firstDay);
+    const today = new Date();
+    let endDate = formatDate(lastDay);
+    
+    if (targetDate.getFullYear() === today.getFullYear() && targetDate.getMonth() === today.getMonth()) {
+        endDate = formatDate(today);
+    }
+
+    const payload = {
+      startDate,
+      endDate,
+      interval: 1, // Daily
+      energyType: 0 // All
+    };
+
+    const res = await this.post<MetricalDataResult>('GetCustomerMetricalData', payload);
+    return res.d.ResultList || [];
+  }
+
+  private parseOverview(
+    infoRes: JNUResponse<UserInfoResult>,
+    allowanceRes: JNUResponse<SubsidyItem>,
+    billRes: JNUResponse<BillItem>
+  ): OverviewData {
+    const data: OverviewData = {
+      room: this.room || 'Unknown',
+      balance: 0.0,
+      costs: { elec: 0, cold: 0, hot: 0, total: 0 },
+      details: { elec: [0, 0], cold: [0, 0], hot: [0, 0] }
+    };
+
+    try {
+        if(infoRes.d.ResultList && infoRes.d.ResultList.length > 0) {
+            const roomInfo = infoRes.d.ResultList[0].roomInfo;
+             const balanceItem = roomInfo.find(i => i.keyName.includes('余额'));
+             if (balanceItem) data.balance = parseFloat(balanceItem.keyValue);
+        }
+    } catch (e) {
+        console.warn("Error parsing balance", e);
+    }
+
+    const billList = billRes.d.ResultList || [];
+
+    const getDetails = (typeId: number): {cost: number, usage: number, price: number} => {
+        let usage = 0.0;
+        const billItem = billList.find(x => Number(x.energyType) === typeId);
+        
+        if (billItem && billItem.energyCostDetails && billItem.energyCostDetails.length > 0) {
+            const vals = billItem.energyCostDetails[0].billItemValues;
+            if (vals && vals.length > 0) {
+                usage = parseFloat(vals[0].energyValue.toString() || '0');
+            }
+        }
+
+        let price = billItem ? parseFloat(billItem.unitPrice.toString() || '0') : 0.0;
+        if (price <= 0.001) {
+            price = RATES[typeId] || 0.0;
+        }
+
+        const cost = usage * price;
+        return { cost, usage, price };
+    };
+
+    const elec = getDetails(EnergyType.ELEC);
+    const cold = getDetails(EnergyType.COLD_WATER);
+    const hot = getDetails(EnergyType.HOT_WATER);
+
+    data.costs = {
+        elec: parseFloat(elec.cost.toFixed(2)),
+        cold: parseFloat(cold.cost.toFixed(2)),
+        hot: parseFloat(hot.cost.toFixed(2)),
+        total: parseFloat((elec.cost + cold.cost + hot.cost).toFixed(2))
+    };
+
+    data.details = {
+        elec: [elec.usage, elec.price],
+        cold: [cold.usage, cold.price],
+        hot: [hot.usage, hot.price]
+    };
+
+    return data;
+  }
+}
+
+export const ibsService = new IBSService();
