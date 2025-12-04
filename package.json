@@ -17,17 +17,16 @@
     "recharts": "^3.5.1",
     "lucide-react": "^0.555.0",
     "crypto-js": "^4.2.0",
-    "@capacitor/core": "^6.0.0",
-    "@capacitor/android": "^6.0.0",
-    "@capacitor/http": "^6.0.0",
-    "@capacitor/preferences": "^6.0.0",
-    "@capacitor/filesystem": "^6.0.0"
+    "@capacitor/core": "^5.0.0",
+    "@capacitor/android": "^5.0.0",
+    "@capacitor/preferences": "^5.0.0",
+    "@capacitor/filesystem": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
-    "@capacitor/cli": "^6.0.0"
+    "@capacitor/cli": "^5.0.0"
   }
 }
