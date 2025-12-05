@@ -26,6 +26,7 @@ interface AIConfig {
 import { CountUp } from './components/CountUp';
 import { MarkdownText } from './components/MarkdownText';
 import { CloudAuth } from './components/CloudAuth';
+import { supabase } from './services/supabaseClient';
 import { 
   LineChart, 
   Line, 
@@ -464,7 +465,10 @@ const App: React.FC = () => {
       }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+      // Sign out from Supabase if logged in via cloud
+      await supabase.auth.signOut();
+      
       ibsService.logout();
       setIsLoggedIn(false);
       setIsDemo(false);

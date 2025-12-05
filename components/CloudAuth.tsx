@@ -9,6 +9,7 @@ import {
   User,
   Chrome
 } from 'lucide-react';
+import { supabase } from '../services/supabaseClient';
 
 interface CloudAuthProps {
   onLoginSuccess: (user: any) => void;
@@ -20,15 +21,28 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ onLoginSuccess, onAdminLog
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate Network Request
-    setTimeout(() => {
+    setError('');
+
+    try {
+      if (isLogin) {
+        const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+        if (authError) throw authError;
+        if (data.user) onLoginSuccess(data.user);
+      } else {
+        const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+        if (signUpError) throw signUpError;
+        if (data.user) onLoginSuccess(data.user); // Auto-login after signup
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
       setIsLoading(false);
-      onLoginSuccess({ email, role: 'user' });
-    }, 1500);
+    }
   };
 
   return (
@@ -79,6 +93,13 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ onLoginSuccess, onAdminLog
               />
             </div>
           </div>
+
+          {error && (
+            <div className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-xl flex items-center gap-2 animate-fade-in-up">
+              <AlertCircle size={16} />
+              {error}
+            </div>
+          )}
 
           <div className="flex justify-end">
             <button type="button" className="text-xs font-bold text-indigo-500 hover:text-indigo-600">

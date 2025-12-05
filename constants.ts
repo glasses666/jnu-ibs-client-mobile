@@ -7,6 +7,10 @@ export const API_BASE_URL = 'https://pynhcx.jnu.edu.cn/IBSjnuweb/WebService/JNUS
 export const AES_KEY_STR = 'CetSoftEEMSysWeb';
 export const AES_IV_HEX = '1934577290ABCDEF1264147890ACAE45';
 
+// Supabase Configuration
+export const SUPABASE_URL = 'https://buofqqtpujjtfiemttoq.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDY0OTU3ODksImV4cCI6MTk2MjA2NzQ4OX0.03yzbJjii7OJt3nsbxwb_k4qJCFqLdGlavou2ArIufITAzMn0.03yzbJjii7OJt3nsbxwb_k4qJCFqLdGlavou2ArIufITAzMn0.03yzbJjii7OJt3nsbxwb_k4qJCFqLdGlavou2ArIufI';
+
 // Fallback Rates (JNU Panyu)
 export const RATES: Record<number, number> = {
   [EnergyType.ELEC]: 0.647,
