@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { ibsService } from './services/ibsService';
 import { aiService } from './services/geminiService';
@@ -162,6 +161,9 @@ const App: React.FC = () => {
           setAiBaseUrl(aiConfig.baseUrl || '');
           setAiModel(aiConfig.model || '');
       }
+      const savedCurrency = await loadConfig(StorageKeys.CURRENCY, 'CNY'); // Load currency from storage
+      setCurrency(savedCurrency as 'CNY' | 'USD');
+
     };
     init();
   }, []);
@@ -169,6 +171,7 @@ const App: React.FC = () => {
   // Save config on changes
   useEffect(() => { saveConfig(StorageKeys.THEME, isDark ? 'dark' : 'light'); }, [isDark]);
   useEffect(() => { saveConfig(StorageKeys.LANG, lang); }, [lang]);
+  useEffect(() => { saveConfig(StorageKeys.CURRENCY, currency); }, [currency]); // Save currency
   useEffect(() => { 
       saveConfig(StorageKeys.AI_CONFIG, { 
           enableAI, apiKey, baseUrl: aiBaseUrl, provider: aiProvider, model: aiModel 
@@ -211,7 +214,7 @@ const App: React.FC = () => {
             .then(setDailyBrief)
             .catch(e => console.warn("Daily Brief Failed:", e));
       }
-  }, [overview, enableAI, apiKey, weather, lang]);
+  }, [overview, enableAI, apiKey, weather, lang, aiBaseUrl, aiProvider, aiModel, dailyBrief]);
 
 
   // --- Helpers ---
@@ -246,7 +249,7 @@ const App: React.FC = () => {
   };
 
   const totalSubsidyMoney = overview 
-      ? (overview.subsidyMoney?.elec || 0) + (overview.subsidyMoney?.cold || 0) + (overview.subsidyMoney?.hot || 0)
+      ? parseFloat(((overview.subsidyMoney?.elec || 0) + (overview.subsidyMoney?.cold || 0) + (overview.subsidyMoney?.hot || 0)).toFixed(2))
       : 0;
   
   const balanceStatus = overview ? getBalanceStatus(overview.balance) : getBalanceStatus(0);
@@ -384,11 +387,9 @@ const App: React.FC = () => {
         if (totalDailyAvg === 0) totalDailyAvg = overview.costs.total / 30;
 
         const currentBalance = overview.balance;
-        // Logic Fix: Consider subsidy money
         const totalSubsidy = (overview.subsidyMoney?.elec || 0) + (overview.subsidyMoney?.cold || 0) + (overview.subsidyMoney?.hot || 0);
         
         const sysPrompt = "You are a helpful assistant.";
-        // Updated Prompt with Markdown and Subsidy awareness
         const userPrompt = lang === Language.ZH 
             ? `请计算充值方案。
                数据：
@@ -641,10 +642,6 @@ const App: React.FC = () => {
                                   className="flex-1 accent-indigo-500 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                               />
                               <span className="font-bold text-xl w-10 text-center">{daysToCover}</span>
-                          </div>
-                          <div className="flex justify-between text-[10px] text-gray-400 px-1 mt-1 font-medium">
-                              <span>7 Days</span>
-                              <span>90 Days</span>
                           </div>
                       </div>
 
@@ -1041,6 +1038,38 @@ const App: React.FC = () => {
               </div>
           )}
 
+          {activeTab === 'records' && (
+              <div className="space-y-4 animate-fade-in">
+                  <div className="bg-white dark:bg-gray-800 rounded-[32px] shadow-[0_2px_20px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 overflow-hidden">
+                        <div className="p-6 border-b border-gray-50 dark:border-gray-700/50">
+                            <h3 className="font-bold text-lg dark:text-white">{t.rechargeRecords}</h3>
+                        </div>
+                        <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                            {records.length === 0 ? (
+                              <div className="p-12 text-center text-gray-400 font-medium">No transaction history</div>
+                            ) : records.map((rec, idx) => (
+                                <div key={idx} className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors group cursor-default">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${rec.dataValue > 0 ? 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
+                                            {rec.dataValue > 0 ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-900 dark:text-white text-sm">{rec.paymentType}</p>
+                                            <p className="text-xs text-gray-400 font-medium mt-0.5">{new Date(rec.logTime).toLocaleDateString()} · {new Date(rec.logTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className={`font-black text-sm ${rec.dataValue > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                                            {rec.dataValue > 0 ? '+' : ''}{formatMoney(rec.dataValue)}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                  </div>
+              </div>
+          )}
+
           {activeTab === 'settings' && (
               <div className="space-y-6 animate-fade-in pb-12">
                    <div className="bg-white dark:bg-gray-800 rounded-[32px] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
@@ -1115,6 +1144,9 @@ const App: React.FC = () => {
                    </div>
               </div>
           )}
+
+        </div>
+      </main>
 
       {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-6 left-4 right-4 bg-white/90 dark:bg-gray-950/85 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl z-50 p-2 flex justify-between items-center transition-all duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
