@@ -827,6 +827,11 @@ const App: React.FC = () => {
                       
                       <div className="relative z-10 flex justify-between items-start">
                           <div>
+                              {/* Relocated and Styled Status Indicator */}
+                              <div className="flex items-center gap-2 mb-2">
+                                  <div className={`w-2.5 h-2.5 rounded-full ${balanceStatus.dotClass}`}></div>
+                                  <p className="text-sm font-bold text-gray-300 dark:text-gray-400">{balanceStatus.statusText}</p>
+                              </div>
                               <p className="text-gray-400 font-medium text-sm uppercase tracking-widest mb-1">{t.balance}</p>
                               <h3 className={`text-5xl font-black tracking-tighter ${balanceStatus.textClass}`}>
                                   <CountUp value={overview.balance} formatter={formatMoney} />
@@ -853,19 +858,6 @@ const App: React.FC = () => {
                                     <CountUp value={totalSubsidyMoney} formatter={formatMoney} />
                                 </p>
                             </div>
-                            <div className="hidden md:block">
-                                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Status</p>
-                                <div className="flex items-center gap-1.5">
-                                    <div className={`w-2 h-2 rounded-full ${balanceStatus.dotClass}`}></div>
-                                    <p className="text-sm font-bold">{balanceStatus.statusText}</p>
-                                </div>
-                            </div>
-                          </div>
-                          
-                          {/* Mobile Status Indicator (Compact) */}
-                          <div className="md:hidden absolute top-[-20px] right-0 flex items-center gap-1.5 bg-black/20 backdrop-blur px-2 py-1 rounded-full border border-white/5">
-                              <div className={`w-2 h-2 rounded-full ${balanceStatus.dotClass}`}></div>
-                              <p className="text-[10px] font-bold">{balanceStatus.statusText}</p>
                           </div>
                           
                           <button 
