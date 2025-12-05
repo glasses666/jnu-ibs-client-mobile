@@ -9,7 +9,7 @@ export const AES_IV_HEX = '1934577290ABCDEF1264147890ACAE45';
 
 // Supabase Configuration
 export const SUPABASE_URL = 'https://buofqqtpujjtfiemttoq.supabase.co';
-export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDY0OTU3ODksImV4cCI6MTk2MjA2NzQ4OX0.03yzbJjii7OJt3nsbxwb_k4qJCFqLdGlavou2ArIufITAzMn0.03yzbJjii7OJt3nsbxwb_k4qJCFqLdGlavou2ArIufITAzMn0.03yzbJjii7OJt3nsbxwb_k4qJCFqLdGlavou2ArIufI';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1b2ZxcXRwdWpqdGZpZW10dG9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5NDkwMzIsImV4cCI6MjA4MDUyNTAzMn0.03yzbJjii7OJt3nsbxwb_k4qJCFqLdGlavou2ArIufI';
 
 // Fallback Rates (JNU Panyu)
 export const RATES: Record<number, number> = {
