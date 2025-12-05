@@ -155,6 +155,9 @@ const App: React.FC = () => {
   
   // Cloud Auth State
   const [showCloudAuth, setShowCloudAuth] = useState(false);
+  
+  // Config Loading State (Prevents overwriting storage during init)
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
 
   const t = LABELS[lang];
 
@@ -182,20 +185,23 @@ const App: React.FC = () => {
       }
       const savedCurrency = await loadConfig<string>(StorageKeys.CURRENCY, 'CNY'); 
       setCurrency(savedCurrency as 'CNY' | 'USD');
-
+      
+      setIsConfigLoaded(true);
     };
     init();
   }, []);
 
   // Save config on changes
-  useEffect(() => { saveConfig(StorageKeys.THEME, isDark ? 'dark' : 'light'); }, [isDark]);
-  useEffect(() => { saveConfig(StorageKeys.LANG, lang); }, [lang]);
-  useEffect(() => { saveConfig(StorageKeys.CURRENCY, currency); }, [currency]); // Save currency
+  useEffect(() => { if(isConfigLoaded) saveConfig(StorageKeys.THEME, isDark ? 'dark' : 'light'); }, [isDark, isConfigLoaded]);
+  useEffect(() => { if(isConfigLoaded) saveConfig(StorageKeys.LANG, lang); }, [lang, isConfigLoaded]);
+  useEffect(() => { if(isConfigLoaded) saveConfig(StorageKeys.CURRENCY, currency); }, [currency, isConfigLoaded]); 
   useEffect(() => { 
-      saveConfig(StorageKeys.AI_CONFIG, { 
-          enableAI, apiKey, baseUrl: aiBaseUrl, provider: aiProvider, model: aiModel 
-      }); 
-  }, [enableAI, apiKey, aiBaseUrl, aiProvider, aiModel]);
+      if(isConfigLoaded) {
+          saveConfig(StorageKeys.AI_CONFIG, { 
+              enableAI, apiKey, baseUrl: aiBaseUrl, provider: aiProvider, model: aiModel 
+          }); 
+      }
+  }, [enableAI, apiKey, aiBaseUrl, aiProvider, aiModel, isConfigLoaded]);
 
   // Apply Theme
   useEffect(() => {
