@@ -7,7 +7,8 @@ import {
   MessageCircle, 
   ShieldCheck,
   User,
-  Chrome
+  Chrome,
+  AlertCircle
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 
