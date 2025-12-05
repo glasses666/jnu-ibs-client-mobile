@@ -29,6 +29,14 @@
   .delay-200 { animation-delay: 200ms; }
   .delay-300 { animation-delay: 300ms; }
   
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-pulse-fast {
+    animation: pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
   /* Prevent tap highlight color on mobile */
   * {
     -webkit-tap-highlight-color: transparent;

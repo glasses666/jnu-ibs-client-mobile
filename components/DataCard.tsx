@@ -5,31 +5,32 @@ interface DataCardProps {
   title: string;
   value?: string | number;
   animatedValue?: number;
-  formatFn?: (val: number) => string;
-  subValue?: string;
-  subsidy?: string; 
-  icon: React.ReactNode;
-  colorClass: string; 
-  trend?: string; 
-  onClick?: () => void;
-}
-
-const DataCard: React.FC<DataCardProps> = ({
-  title,
-  value,
-  animatedValue,
-  formatFn,
-  subValue,
-  subsidy,
-  icon,
-  colorClass,
-  trend,
-  onClick
-}) => {
-  return (
-    <div 
-      onClick={onClick}
-      className={`bg-white dark:bg-gray-800 rounded-3xl p-5 flex flex-col justify-between h-full shadow-[0_2px_20px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-transform active:scale-[0.98] ${onClick ? 'cursor-pointer hover:shadow-md' : ''}`}
+    formatFn?: (val: number) => string;
+    subValue?: string;
+    subsidy?: string; 
+    subsidyVariant?: 'success' | 'danger';
+    icon: React.ReactNode;
+    colorClass: string; 
+    trend?: string; 
+    onClick?: () => void;
+  }
+  
+  const DataCard: React.FC<DataCardProps> = ({ 
+    title, 
+    value, 
+    animatedValue, 
+    formatFn, 
+    subValue, 
+    subsidy, 
+    subsidyVariant = 'success',
+    icon, 
+    colorClass, 
+    trend, 
+    onClick 
+  }) => {
+    return (
+      <div 
+        onClick={onClick}      className={`bg-white dark:bg-gray-800 rounded-3xl p-5 flex flex-col justify-between h-full shadow-[0_2px_20px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 transition-transform active:scale-[0.98] ${onClick ? 'cursor-pointer hover:shadow-md' : ''}`}
     >
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-2xl ${colorClass.split(' ')[1]} dark:bg-opacity-10`}>
@@ -60,7 +61,11 @@ const DataCard: React.FC<DataCardProps> = ({
            </div>
            {subsidy && (
              <div className="flex justify-end">
-                <span className="text-[10px] font-bold text-green-500 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded">
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    subsidyVariant === 'danger' 
+                    ? 'text-red-500 bg-red-50 dark:bg-red-900/20'
+                    : 'text-green-500 bg-green-50 dark:bg-green-900/20'
+                }`}>
                   补: {subsidy}
                 </span>
              </div>

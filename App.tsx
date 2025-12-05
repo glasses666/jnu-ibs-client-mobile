@@ -155,11 +155,38 @@ const App: React.FC = () => {
       if (currency === 'CNY') {
           return `¥${amountInCNY.toFixed(2)}`;
       } else {
-          // Approx Exchange Rate 1 CNY = 0.138 USD
           const usd = amountInCNY * 0.138;
           return `$${usd.toFixed(2)}`;
       }
   };
+
+  const getBalanceStatus = (balance: number) => {
+      if (balance <= 0) {
+          return {
+              textClass: 'text-red-400',
+              statusText: 'Offline',
+              dotClass: 'bg-red-500 shadow-[0_0_8px_rgb(239,68,68)] animate-pulse-fast'
+          };
+      } else if (balance <= 30) {
+          return {
+              textClass: 'text-yellow-400',
+              statusText: 'Recommended to top up',
+              dotClass: 'bg-yellow-400 shadow-[0_0_8px_rgb(250,204,21)] animate-pulse-slow'
+          };
+      }
+      return {
+          textClass: 'text-white', // Default active
+          statusText: 'Active',
+          dotClass: 'bg-green-400 shadow-[0_0_8px_rgb(74,222,128)]'
+      };
+  };
+
+  // Calculate Totals
+  const totalSubsidyMoney = overview 
+      ? (overview.subsidyMoney?.elec || 0) + (overview.subsidyMoney?.cold || 0) + (overview.subsidyMoney?.hot || 0)
+      : 0;
+  
+  const balanceStatus = overview ? getBalanceStatus(overview.balance) : getBalanceStatus(0);
 
   // --- Effects ---
   useEffect(() => {
@@ -801,7 +828,7 @@ const App: React.FC = () => {
                       <div className="relative z-10 flex justify-between items-start">
                           <div>
                               <p className="text-gray-400 font-medium text-sm uppercase tracking-widest mb-1">{t.balance}</p>
-                              <h3 className="text-5xl font-black tracking-tighter">
+                              <h3 className={`text-5xl font-black tracking-tighter ${balanceStatus.textClass}`}>
                                   <CountUp value={overview.balance} formatter={formatMoney} />
                               </h3>
                           </div>
@@ -813,7 +840,7 @@ const App: React.FC = () => {
                       </div>
 
                       <div className="relative z-10 mt-8 pt-8 border-t border-white/10 flex justify-between items-end">
-                          <div className="flex gap-12">
+                          <div className="flex gap-8 md:gap-12">
                             <div>
                                 <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">{t.totalCost}</p>
                                 <p className="text-xl font-bold">
@@ -821,12 +848,24 @@ const App: React.FC = () => {
                                 </p>
                             </div>
                             <div>
+                                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Subsidy</p>
+                                <p className={`text-xl font-bold ${totalSubsidyMoney > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    <CountUp value={totalSubsidyMoney} formatter={formatMoney} />
+                                </p>
+                            </div>
+                            <div className="hidden md:block">
                                 <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Status</p>
                                 <div className="flex items-center gap-1.5">
-                                    <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgb(74,222,128)]"></div>
-                                    <p className="text-sm font-bold">Active</p>
+                                    <div className={`w-2 h-2 rounded-full ${balanceStatus.dotClass}`}></div>
+                                    <p className="text-sm font-bold">{balanceStatus.statusText}</p>
                                 </div>
                             </div>
+                          </div>
+                          
+                          {/* Mobile Status Indicator (Compact) */}
+                          <div className="md:hidden absolute top-[-20px] right-0 flex items-center gap-1.5 bg-black/20 backdrop-blur px-2 py-1 rounded-full border border-white/5">
+                              <div className={`w-2 h-2 rounded-full ${balanceStatus.dotClass}`}></div>
+                              <p className="text-[10px] font-bold">{balanceStatus.statusText}</p>
                           </div>
                           
                           <button 
@@ -866,9 +905,10 @@ const App: React.FC = () => {
                           formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitKwh}`}
                           subValue={displayUnit === 'money' ? `${overview.details.elec[0]} ${t.unitKwh}` : formatMoney(overview.costs.elec)}
                           subsidy={displayUnit === 'money' 
-                              ? (overview.subsidyMoney?.elec > 0 ? formatMoney(overview.subsidyMoney.elec) : undefined)
-                              : (overview.subsidy?.elec > 0 ? `${overview.subsidy.elec} ${t.unitKwh}` : undefined)
+                              ? formatMoney(overview.subsidyMoney?.elec || 0)
+                              : `${overview.subsidy?.elec || 0} ${t.unitKwh}`
                           }
+                          subsidyVariant={(overview.subsidy?.elec || 0) > 0 ? 'success' : 'danger'}
                           icon={<Zap size={22}/>}
                           colorClass="text-yellow-600 bg-yellow-400"
                           trend="+2.4%"
@@ -880,9 +920,10 @@ const App: React.FC = () => {
                           formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitM3}`}
                           subValue={displayUnit === 'money' ? `${overview.details.cold[0]} ${t.unitM3}` : formatMoney(overview.costs.cold)}
                           subsidy={displayUnit === 'money' 
-                              ? (overview.subsidyMoney?.cold > 0 ? formatMoney(overview.subsidyMoney.cold) : undefined)
-                              : (overview.subsidy?.cold > 0 ? `${overview.subsidy.cold} ${t.unitM3}` : undefined)
+                              ? formatMoney(overview.subsidyMoney?.cold || 0)
+                              : `${overview.subsidy?.cold || 0} ${t.unitM3}`
                           }
+                          subsidyVariant={(overview.subsidy?.cold || 0) > 0 ? 'success' : 'danger'}
                           icon={<Droplet size={22}/>}
                           colorClass="text-blue-600 bg-blue-400"
                           trend="-0.5%"
@@ -894,9 +935,10 @@ const App: React.FC = () => {
                           formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitM3}`}
                           subValue={displayUnit === 'money' ? `${overview.details.hot[0]} ${t.unitM3}` : formatMoney(overview.costs.hot)}
                           subsidy={displayUnit === 'money' 
-                              ? (overview.subsidyMoney?.hot > 0 ? formatMoney(overview.subsidyMoney.hot) : undefined)
-                              : (overview.subsidy?.hot > 0 ? `${overview.subsidy.hot} ${t.unitM3}` : undefined)
+                              ? formatMoney(overview.subsidyMoney?.hot || 0)
+                              : `${overview.subsidy?.hot || 0} ${t.unitM3}`
                           }
+                          subsidyVariant={(overview.subsidy?.hot || 0) > 0 ? 'success' : 'danger'}
                           icon={<Flame size={22}/>}
                           colorClass="text-orange-600 bg-orange-400"
                           onClick={handleRefresh}
