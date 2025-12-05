@@ -14,6 +14,10 @@ export const RATES: Record<number, number> = {
   [EnergyType.HOT_WATER]: 25.0
 };
 
+// Weather API Constants
+export const WEATHER_API_ID = '10010578';
+export const WEATHER_API_KEY = 'feda2d2bcc4e153b1b063a50760f82a4';
+
 export const LABELS = {
   zh: {
     title: '暨南大学 IBS 水电查询',

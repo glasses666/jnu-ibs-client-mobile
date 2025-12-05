@@ -73,13 +73,17 @@ export class AIService {
     }
   }
 
-  async generateDailyBrief(overview: OverviewData, lang: Language): Promise<string> {
+  async generateDailyBrief(overview: OverviewData, lang: Language, weather?: any): Promise<string> {
       if (!this.apiKey) return "";
       
+      const weatherCtx = weather 
+        ? `今天天气: ${weather.place} ${weather.weather}, ${weather.temperature}°C.` 
+        : "";
+
       const prompt = lang === Language.ZH
-        ? `作为宿舍小助手，请根据当前余额 ¥${overview.balance} 和总支出 ¥${overview.costs.total}，写一句**极简短**的早安/问候语（不超过20字）。
-           要求：元气满满，包含1-2个Emoji 🌤️。如果余额低于30元，提醒充值。`
-        : `Write a VERY short (max 15 words) cheerful daily greeting based on Balance ¥${overview.balance}. Warn if under 30. Use Emojis 🌤️.`;
+        ? `作为宿舍小助手，请根据当前余额 ¥${overview.balance} 和总支出 ¥${overview.costs.total}，以及${weatherCtx}，写一句**极简短**的早安/问候语（不超过20字）。
+           要求：元气满满，包含1-2个Emoji 🌤️。结合天气给出温馨提示（如带伞、防晒等）。`
+        : `Write a VERY short (max 15 words) cheerful daily greeting based on Balance ¥${overview.balance} and Weather (${weatherCtx}). Use Emojis 🌤️.`;
         
       if (this.provider === 'google') {
           return this.callGoogleGemini(prompt);

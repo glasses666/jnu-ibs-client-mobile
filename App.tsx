@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ibsService } from './services/ibsService';
 import { aiService } from './services/geminiService';
+import { weatherService, WeatherData } from './services/weatherService';
 import { 
   OverviewData, 
   PaymentRecord, 
@@ -125,6 +126,7 @@ const App: React.FC = () => {
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [records, setRecords] = useState<PaymentRecord[]>([]);
   const [trends, setTrends] = useState<MetricalDataResult[]>([]);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
   const [chartDate, setChartDate] = useState(new Date()); // Controls which month we are viewing in Trends
   
   // UI Toggles
@@ -227,19 +229,21 @@ const App: React.FC = () => {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [ov, rec, tr] = await Promise.all([
+      const [ov, rec, tr, wx] = await Promise.all([
         ibsService.fetchOverview(),
         ibsService.fetchRecords(1, 20),
-        ibsService.fetchTrends(chartDate.getFullYear(), chartDate.getMonth())
+        ibsService.fetchTrends(chartDate.getFullYear(), chartDate.getMonth()),
+        weatherService.getWeather()
       ]);
       setOverview(ov);
       setRecords(rec);
       setTrends(tr);
+      setWeather(wx);
       
       // Trigger Daily Brief if AI Ready
       if (enableAI && apiKey) {
           aiService.initialize(apiKey, aiBaseUrl, aiProvider, aiModel);
-          aiService.generateDailyBrief(ov, lang).then(setDailyBrief).catch(console.error);
+          aiService.generateDailyBrief(ov, lang, wx).then(setDailyBrief).catch(console.error);
       }
     } catch (err) {
       console.error(err);
@@ -681,12 +685,19 @@ const App: React.FC = () => {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 z-40 flex items-center justify-between px-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 z-40 flex items-center justify-between px-4 transition-all duration-300">
          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-bold text-xs">
               {overview?.room?.substring(0, 1) || 'R'}
             </div>
-            <span className="font-bold text-sm tracking-tight">{overview?.room}</span>
+            <div className="flex flex-col">
+                <span className="font-bold text-sm tracking-tight leading-tight">{overview?.room}</span>
+                {weather && (
+                    <span className="text-[10px] font-medium text-gray-400 leading-tight">
+                        {weather.weather} {weather.temperature}°
+                    </span>
+                )}
+            </div>
          </div>
          <button onClick={handleRefresh} className={`p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 ${isLoading ? 'animate-spin' : ''}`}>
              <RefreshCw size={20} />
@@ -700,7 +711,18 @@ const App: React.FC = () => {
           <header className="hidden lg:flex justify-between items-end mb-10 pt-4">
               <div>
                 <h2 className="text-4xl font-black tracking-tighter text-gray-900 dark:text-white">{t[activeTab]}</h2>
-                <p className="text-gray-400 font-medium mt-2">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div className="flex items-center gap-3 mt-2">
+                    <p className="text-gray-400 font-medium">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    {weather && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-500 dark:text-gray-400">
+                            <span>{weather.place}</span>
+                            <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                            <span>{weather.weather}</span>
+                            <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                            <span>{weather.temperature}°C</span>
+                        </div>
+                    )}
+                </div>
               </div>
               
               <button 
