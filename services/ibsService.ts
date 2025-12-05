@@ -158,6 +158,7 @@ export class IBSService {
       room: this.room || 'Unknown',
       balance: 0.0,
       costs: { elec: 0, cold: 0, hot: 0, total: 0 },
+      subsidy: { elec: 0, cold: 0, hot: 0 },
       details: { elec: [0, 0], cold: [0, 0], hot: [0, 0] }
     };
 
@@ -172,6 +173,20 @@ export class IBSService {
     }
 
     const billList = billRes.d.ResultList || [];
+    const subList = allowanceRes.d.ResultList || [];
+
+    const getSubsidy = (typeId: number): number => {
+        // Find subsidy item where itemType matches energyType
+        // Note: The API might use string or number for itemType
+        const item = subList.find(x => Number(x.itemType) === typeId);
+        return item ? parseFloat(item.avalibleValue.toString() || '0') : 0;
+    };
+    
+    data.subsidy = {
+        elec: getSubsidy(EnergyType.ELEC),
+        cold: getSubsidy(EnergyType.COLD_WATER),
+        hot: getSubsidy(EnergyType.HOT_WATER)
+    };
 
     const getDetails = (typeId: number): {cost: number, usage: number, price: number} => {
         let usage = 0.0;

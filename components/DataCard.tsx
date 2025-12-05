@@ -4,13 +4,14 @@ interface DataCardProps {
   title: string;
   value: string | number;
   subValue?: string;
+  subsidy?: string; // New prop
   icon: React.ReactNode;
-  colorClass: string; // Expecting something like "text-blue-500 bg-blue-50"
-  trend?: string; // Optional trend indicator like "+12%"
+  colorClass: string; 
+  trend?: string; 
   onClick?: () => void;
 }
 
-const DataCard: React.FC<DataCardProps> = ({ title, value, subValue, icon, colorClass, trend, onClick }) => {
+const DataCard: React.FC<DataCardProps> = ({ title, value, subValue, subsidy, icon, colorClass, trend, onClick }) => {
   return (
     <div 
       onClick={onClick}
@@ -30,10 +31,19 @@ const DataCard: React.FC<DataCardProps> = ({ title, value, subValue, icon, color
       </div>
       <div>
         <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">{value}</h3>
-        <div className="flex items-baseline justify-between mt-1">
-           <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">{title}</p>
-           {subValue && (
-            <p className="text-xs font-medium text-gray-400 dark:text-gray-500">{subValue}</p>
+        <div className="flex flex-col mt-1 gap-0.5">
+           <div className="flex items-baseline justify-between">
+              <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">{title}</p>
+              {subValue && (
+                <p className="text-xs font-medium text-gray-400 dark:text-gray-500">{subValue}</p>
+              )}
+           </div>
+           {subsidy && (
+             <div className="flex justify-end">
+                <span className="text-[10px] font-bold text-green-500 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded">
+                  补: {subsidy}
+                </span>
+             </div>
            )}
         </div>
       </div>

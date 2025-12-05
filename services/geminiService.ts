@@ -40,6 +40,7 @@ export class AIService {
       balance: overview.balance,
       costs: overview.costs,
       usage: overview.details,
+      subsidy: overview.subsidy, // Included subsidy info
       trends: trends.map(t => ({
         type: t.energyType, // 2=Elec, 3=Cold, 4=Hot
         points: t.datas.length 

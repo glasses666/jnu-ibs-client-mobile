@@ -63,6 +63,7 @@ const MOCK_OVERVIEW: OverviewData = {
   room: "T8201",
   balance: 124.50,
   costs: { elec: 85.2, cold: 24.5, hot: 12.0, total: 121.7 },
+  subsidy: { elec: 15.5, cold: 5.0, hot: 0 },
   details: { elec: [131.6, 0.647], cold: [8.7, 2.82], hot: [0.48, 25.0] }
 };
 
@@ -810,6 +811,7 @@ const App: React.FC = () => {
                           title={t.electricity}
                           value={displayUnit === 'money' ? formatMoney(overview.costs.elec) : `${overview.details.elec[0]} ${t.unitKwh}`}
                           subValue={displayUnit === 'money' ? `${overview.details.elec[0]} ${t.unitKwh}` : formatMoney(overview.costs.elec)}
+                          subsidy={overview.subsidy?.elec > 0 ? `${overview.subsidy.elec} ${t.unitKwh}` : undefined}
                           icon={<Zap size={22}/>}
                           colorClass="text-yellow-600 bg-yellow-400"
                           trend="+2.4%"
@@ -819,6 +821,7 @@ const App: React.FC = () => {
                           title={t.coldWater}
                           value={displayUnit === 'money' ? formatMoney(overview.costs.cold) : `${overview.details.cold[0]} ${t.unitM3}`}
                           subValue={displayUnit === 'money' ? `${overview.details.cold[0]} ${t.unitM3}` : formatMoney(overview.costs.cold)}
+                          subsidy={overview.subsidy?.cold > 0 ? `${overview.subsidy.cold} ${t.unitM3}` : undefined}
                           icon={<Droplet size={22}/>}
                           colorClass="text-blue-600 bg-blue-400"
                           trend="-0.5%"
@@ -828,6 +831,7 @@ const App: React.FC = () => {
                           title={t.hotWater}
                           value={displayUnit === 'money' ? formatMoney(overview.costs.hot) : `${overview.details.hot[0]} ${t.unitM3}`}
                           subValue={displayUnit === 'money' ? `${overview.details.hot[0]} ${t.unitM3}` : formatMoney(overview.costs.hot)}
+                          subsidy={overview.subsidy?.hot > 0 ? `${overview.subsidy.hot} ${t.unitM3}` : undefined}
                           icon={<Flame size={22}/>}
                           colorClass="text-orange-600 bg-orange-400"
                           onClick={handleRefresh}

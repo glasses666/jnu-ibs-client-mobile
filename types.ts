@@ -55,6 +55,11 @@ export interface OverviewData {
     hot: number;
     total: number;
   };
+  subsidy: {
+    elec: number;
+    cold: number;
+    hot: number;
+  };
   details: {
     elec: [number, number]; // [usage, price]
     cold: [number, number];
