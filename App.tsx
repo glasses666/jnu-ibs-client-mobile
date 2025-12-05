@@ -25,6 +25,7 @@ interface AIConfig {
 
 import { CountUp } from './components/CountUp';
 import { MarkdownText } from './components/MarkdownText';
+import { CloudAuth } from './components/CloudAuth';
 import { 
   LineChart, 
   Line, 
@@ -151,6 +152,9 @@ const App: React.FC = () => {
   const [daysToCover, setDaysToCover] = useState(30); 
   const [calcResult, setCalcResult] = useState('');
   const [isCalcLoading, setIsCalcLoading] = useState(false);
+  
+  // Cloud Auth State
+  const [showCloudAuth, setShowCloudAuth] = useState(false);
 
   const t = LABELS[lang];
 
@@ -547,6 +551,22 @@ const App: React.FC = () => {
 
   // --- Render Login ---
   if (!isLoggedIn) {
+    if (showCloudAuth) {
+        return (
+            <CloudAuth 
+                onLoginSuccess={(user) => {
+                    // Simulate Cloud Login linking to a room
+                    // In real app, fetch user's room from DB
+                    setLoginRoom('T8201'); 
+                    handleLogin({ preventDefault: () => {} } as any);
+                }}
+                onAdminLogin={() => {
+                    alert("管理员通道已激活");
+                }}
+            />
+        );
+    }
+
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#f2f4f6] dark:bg-gray-900 transition-colors">
         <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[32px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] p-8 border border-white/50 dark:border-gray-700">
@@ -597,7 +617,13 @@ const App: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 flex flex-col items-center gap-4">
+             <button 
+               onClick={() => setShowCloudAuth(true)}
+               className="w-full py-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 hover:text-primary hover:border-primary transition-all font-bold text-sm"
+             >
+                使用云端账号登录
+             </button>
              <button 
                onClick={enterDemoMode}
                className="text-xs font-bold text-gray-400 hover:text-primary transition-colors tracking-wide uppercase"
