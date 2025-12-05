@@ -95,7 +95,7 @@ export const LABELS = {
     regenerate: '重新生成',
     statusActive: '服务正常',
     statusRecommend: '建议充值',
-    statusOffline: '已欠费/断网',
+    statusOffline: '已欠费',
     tryDemo: '试用演示模式',
     subsidyLabel: '补贴',
     statusLabel: '状态'
