@@ -86,7 +86,19 @@ export const LABELS = {
     monthPrev: '上个月',
     monthNext: '下个月',
     unitKwh: 'kWh',
-    unitM3: 'm³'
+    unitM3: 'm³',
+    currencyLabel: '货币单位',
+    trendAnalysisTitle: 'AI 趋势解读',
+    generateAnalysis: '生成分析',
+    analysisNotEnabled: '未启用 AI',
+    analysisPlaceholder: '点击生成基于当前图表数据的智能分析报告。',
+    regenerate: '重新生成',
+    statusActive: '服务正常',
+    statusRecommend: '建议充值',
+    statusOffline: '已欠费/断网',
+    tryDemo: '试用演示模式',
+    subsidyLabel: '补贴',
+    statusLabel: '状态'
   },
   en: {
     title: 'JNU IBS Client',
@@ -155,6 +167,18 @@ export const LABELS = {
     monthPrev: 'Prev Month',
     monthNext: 'Next Month',
     unitKwh: 'kWh',
-    unitM3: 'm³'
+    unitM3: 'm³',
+    currencyLabel: 'Currency',
+    trendAnalysisTitle: 'AI Trend Analysis',
+    generateAnalysis: 'Generate',
+    analysisNotEnabled: 'AI Disabled',
+    analysisPlaceholder: 'Tap to generate smart analysis based on current chart data.',
+    regenerate: 'Regenerate',
+    statusActive: 'Active',
+    statusRecommend: 'Recommended to top up',
+    statusOffline: 'Offline',
+    tryDemo: 'Try Demo Mode',
+    subsidyLabel: 'Subsidy',
+    statusLabel: 'Status'
   }
 };
