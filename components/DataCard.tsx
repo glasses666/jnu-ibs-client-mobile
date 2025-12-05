@@ -1,17 +1,31 @@
 import React from 'react';
+import { CountUp } from './CountUp';
 
 interface DataCardProps {
   title: string;
-  value: string | number;
+  value?: string | number;
+  animatedValue?: number;
+  formatFn?: (val: number) => string;
   subValue?: string;
-  subsidy?: string; // New prop
+  subsidy?: string; 
   icon: React.ReactNode;
   colorClass: string; 
   trend?: string; 
   onClick?: () => void;
 }
 
-const DataCard: React.FC<DataCardProps> = ({ title, value, subValue, subsidy, icon, colorClass, trend, onClick }) => {
+const DataCard: React.FC<DataCardProps> = ({
+  title,
+  value,
+  animatedValue,
+  formatFn,
+  subValue,
+  subsidy,
+  icon,
+  colorClass,
+  trend,
+  onClick
+}) => {
   return (
     <div 
       onClick={onClick}
@@ -30,7 +44,13 @@ const DataCard: React.FC<DataCardProps> = ({ title, value, subValue, subsidy, ic
         )}
       </div>
       <div>
-        <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">{value}</h3>
+        <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+            {typeof animatedValue === 'number' ? (
+                <CountUp value={animatedValue} formatter={formatFn} />
+            ) : (
+                value
+            )}
+        </h3>
         <div className="flex flex-col mt-1 gap-0.5">
            <div className="flex items-baseline justify-between">
               <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">{title}</p>

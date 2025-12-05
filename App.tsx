@@ -13,6 +13,7 @@ import {
 } from './types';
 import { LABELS } from './constants';
 import DataCard from './components/DataCard';
+import { CountUp } from './components/CountUp';
 import { MarkdownText } from './components/MarkdownText';
 import { 
   LineChart, 
@@ -800,7 +801,9 @@ const App: React.FC = () => {
                       <div className="relative z-10 flex justify-between items-start">
                           <div>
                               <p className="text-gray-400 font-medium text-sm uppercase tracking-widest mb-1">{t.balance}</p>
-                              <h3 className="text-5xl font-black tracking-tighter">{formatMoney(overview.balance)}</h3>
+                              <h3 className="text-5xl font-black tracking-tighter">
+                                  <CountUp value={overview.balance} formatter={formatMoney} />
+                              </h3>
                           </div>
                           <div className="flex flex-col gap-3">
                             <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -813,7 +816,9 @@ const App: React.FC = () => {
                           <div className="flex gap-12">
                             <div>
                                 <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">{t.totalCost}</p>
-                                <p className="text-xl font-bold">{formatMoney(overview.costs.total)}</p>
+                                <p className="text-xl font-bold">
+                                    <CountUp value={overview.costs.total} formatter={formatMoney} />
+                                </p>
                             </div>
                             <div>
                                 <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Status</p>
@@ -834,24 +839,8 @@ const App: React.FC = () => {
                       </div>
                   </div>
                   
-                  {/* Toggles (Currency & Unit) */}
+                  {/* Toggles (Unit Only - Currency moved to Settings) */}
                   <div className="flex justify-end gap-3 animate-fade-in-up delay-100">
-                      {/* Currency Toggle */}
-                      <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl inline-flex transition-colors duration-300">
-                          <button 
-                             onClick={() => setCurrency('CNY')}
-                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${currency === 'CNY' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
-                          >
-                             {t.currencyCNY}
-                          </button>
-                          <button 
-                             onClick={() => setCurrency('USD')}
-                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${currency === 'USD' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
-                          >
-                             {t.currencyUSD}
-                          </button>
-                      </div>
-
                       {/* Display Unit Toggle */}
                       <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl inline-flex transition-colors duration-300">
                           <button 
@@ -873,7 +862,8 @@ const App: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in-up delay-200">
                       <DataCard 
                           title={t.electricity}
-                          value={displayUnit === 'money' ? formatMoney(overview.costs.elec) : `${overview.details.elec[0]} ${t.unitKwh}`}
+                          animatedValue={displayUnit === 'money' ? overview.costs.elec : overview.details.elec[0]}
+                          formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitKwh}`}
                           subValue={displayUnit === 'money' ? `${overview.details.elec[0]} ${t.unitKwh}` : formatMoney(overview.costs.elec)}
                           subsidy={displayUnit === 'money' 
                               ? (overview.subsidyMoney?.elec > 0 ? formatMoney(overview.subsidyMoney.elec) : undefined)
@@ -886,7 +876,8 @@ const App: React.FC = () => {
                       />
                       <DataCard 
                           title={t.coldWater}
-                          value={displayUnit === 'money' ? formatMoney(overview.costs.cold) : `${overview.details.cold[0]} ${t.unitM3}`}
+                          animatedValue={displayUnit === 'money' ? overview.costs.cold : overview.details.cold[0]}
+                          formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitM3}`}
                           subValue={displayUnit === 'money' ? `${overview.details.cold[0]} ${t.unitM3}` : formatMoney(overview.costs.cold)}
                           subsidy={displayUnit === 'money' 
                               ? (overview.subsidyMoney?.cold > 0 ? formatMoney(overview.subsidyMoney.cold) : undefined)
@@ -899,7 +890,8 @@ const App: React.FC = () => {
                       />
                        <DataCard 
                           title={t.hotWater}
-                          value={displayUnit === 'money' ? formatMoney(overview.costs.hot) : `${overview.details.hot[0]} ${t.unitM3}`}
+                          animatedValue={displayUnit === 'money' ? overview.costs.hot : overview.details.hot[0]}
+                          formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitM3}`}
                           subValue={displayUnit === 'money' ? `${overview.details.hot[0]} ${t.unitM3}` : formatMoney(overview.costs.hot)}
                           subsidy={displayUnit === 'money' 
                               ? (overview.subsidyMoney?.hot > 0 ? formatMoney(overview.subsidyMoney.hot) : undefined)
@@ -1158,6 +1150,29 @@ const App: React.FC = () => {
                                  <button onClick={() => setIsDark(!isDark)} className="text-gray-400 hover:text-primary transition-colors">
                                      {isDark ? <ToggleRight size={40} className="text-primary" fill="currentColor" /> : <ToggleLeft size={40} />}
                                  </button>
+                             </div>
+
+                             <div className="flex items-center justify-between">
+                                 <div className="flex items-center gap-3">
+                                     <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300">
+                                         <CircleDollarSign size={20} />
+                                     </div>
+                                     <span className="font-bold text-gray-900 dark:text-white">{lang === Language.ZH ? '货币单位' : 'Currency'}</span>
+                                 </div>
+                                 <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
+                                     <button 
+                                         onClick={() => setCurrency('CNY')}
+                                         className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${currency === 'CNY' ? 'bg-white dark:bg-gray-600 text-black dark:text-white shadow-sm' : 'text-gray-500'}`}
+                                     >
+                                         CNY
+                                     </button>
+                                     <button 
+                                         onClick={() => setCurrency('USD')}
+                                         className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${currency === 'USD' ? 'bg-white dark:bg-gray-600 text-black dark:text-white shadow-sm' : 'text-gray-500'}`}
+                                     >
+                                         USD
+                                     </button>
+                                 </div>
                              </div>
                         </div>
                    </div>
