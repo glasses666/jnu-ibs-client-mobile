@@ -76,14 +76,33 @@ export class AIService {
   async generateDailyBrief(overview: OverviewData, lang: Language, weather?: any): Promise<string> {
       if (!this.apiKey) return "";
       
+      const hour = new Date().getHours();
+      const timePeriod = hour < 9 ? "Early Morning" : hour < 12 ? "Morning" : hour < 18 ? "Afternoon" : "Evening";
+      const dateStr = new Date().toLocaleDateString();
+      
       const weatherCtx = weather 
-        ? `今天天气: ${weather.place} ${weather.weather}, ${weather.temperature}°C.` 
-        : "";
+        ? `Weather: ${weather.weather}, ${weather.temperature}°C, ${weather.place}.` 
+        : "Weather: Unknown.";
+
+      // Calculate recent usage trend roughly
+      // (This is a lightweight check, real trend data is better but overview has cost)
+      const costStatus = overview.costs.elec > 150 ? "High elec usage" : "Normal usage";
 
       const prompt = lang === Language.ZH
-        ? `作为宿舍小助手，请根据当前余额 ¥${overview.balance} 和总支出 ¥${overview.costs.total}，以及${weatherCtx}，写一句**极简短**的早安/问候语（不超过20字）。
-           要求：元气满满，包含1-2个Emoji 🌤️。结合天气给出温馨提示（如带伞、防晒等）。`
-        : `Write a VERY short (max 15 words) cheerful daily greeting based on Balance ¥${overview.balance} and Weather (${weatherCtx}). Use Emojis 🌤️.`;
+        ? `Task: 写一句**极简短**的智能问候（不超过35字）。
+           Context:
+           - 时间: ${dateStr} ${hour}点 (${timePeriod})
+           - 天气: ${weatherCtx} (请根据气温/季节给一句穿衣或出行建议)
+           - 状态: 余额¥${overview.balance}, ${costStatus}
+           
+           Requirements:
+           1. 必须包含合适的问候语（早/午/晚安）。
+           2. 结合天气+用量/余额 给出温馨提示。
+           3. 语气生动，使用 1-2 个 Emoji 🌤️。
+           4. **绝对不要** 机械地报余额数字，而是说“余额充足”或“记得充值”。`
+        : `Task: Write a short greeting (max 30 words).
+           Context: Time ${hour}h, ${weatherCtx}, Balance ${overview.balance}.
+           Req: Greeting based on time. Weather tip. Mention balance status (Safe/Low) without raw numbers. Emoji 🌤️.`;
         
       if (this.provider === 'google') {
           return this.callGoogleGemini(prompt);

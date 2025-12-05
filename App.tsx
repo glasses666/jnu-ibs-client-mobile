@@ -386,58 +386,63 @@ const App: React.FC = () => {
       try {
         aiService.initialize(apiKey, aiBaseUrl, aiProvider, aiModel);
         
-        let totalDailyAvg = 0;
-        trends.forEach(t => {
-            if (t.datas.length > 0) {
-                const recent = t.datas.slice(-5);
-                const avgVal = recent.reduce((a, b) => a + b.dataValue, 0) / recent.length;
-                const typeId = Number(t.energyType);
-                let price = 0.647; 
-                if (typeId === 3) price = 2.82;
-                if (typeId === 4) price = 25.0;
-                totalDailyAvg += avgVal * price;
-            }
-        });
-        
-        if (totalDailyAvg === 0) totalDailyAvg = overview.costs.total / 30;
+        // 1. Calculate Daily Avg Cost for each type
+        const getDailyAvg = (typeId: number, defaultPrice: number) => {
+            const trend = trends.find(t => Number(t.energyType) === typeId);
+            if (!trend || trend.datas.length === 0) return 0;
+            const recent = trend.datas.slice(-5);
+            const avgUsage = recent.reduce((a, b) => a + b.dataValue, 0) / recent.length;
+            return avgUsage * defaultPrice;
+        };
 
-        const currentBalance = overview.balance;
-        const totalSubsidy = (overview.subsidyMoney?.elec || 0) + (overview.subsidyMoney?.cold || 0) + (overview.subsidyMoney?.hot || 0);
-        
-        const sysPrompt = "You are a helpful assistant.";
+        const dailyElec = getDailyAvg(2, 0.647);
+        const dailyCold = getDailyAvg(3, 2.82);
+        const dailyHot = getDailyAvg(4, 25.0);
+        const totalDaily = dailyElec + dailyCold + dailyHot || (overview.costs.total / 30);
+
+        const subElec = overview.subsidyMoney?.elec || 0;
+        const subCold = overview.subsidyMoney?.cold || 0;
+        const subHot = overview.subsidyMoney?.hot || 0;
+
+        const sysPrompt = "You are a precise billing assistant.";
         const userPrompt = lang === Language.ZH 
-            ? `请计算充值方案。
-               数据：
-               - 当前余额: ¥${currentBalance.toFixed(2)}
-               - 剩余补贴总额: ¥${totalSubsidy.toFixed(2)} (这部分可抵扣消耗)
-               - 近期日均消耗: ¥${totalDailyAvg.toFixed(2)}/天
-               - 目标覆盖天数: ${daysToCover}天
-               - 宿舍人数: ${roommates}人
+            ? `请计算充值方案。注意：补贴是专款专用的（电补只能抵电费）。
                
-               计算逻辑: 
-               1. 总需求 = 日均消耗 * 天数
-               2. 实际需充值 = 总需求 - 余额 - 剩余补贴
-               3. 如果结果 < 0，则无需充值。
+               数据详情：
+               1. ⚡ 电费: 日均消耗 ¥${dailyElec.toFixed(2)}, 剩余补贴 ¥${subElec.toFixed(2)}
+               2. 💧 冷水: 日均消耗 ¥${dailyCold.toFixed(2)}, 剩余补贴 ¥${subCold.toFixed(2)}
+               3. 🔥 热水: 日均消耗 ¥${dailyHot.toFixed(2)}, 剩余补贴 ¥${subHot.toFixed(2)}
                
-               请输出 Markdown 格式：
+               账户通用余额: ¥${overview.balance.toFixed(2)}
+               目标天数: ${daysToCover}天
+               宿舍人数: ${roommates}人
+               
+               计算逻辑:
+               1. 分别计算每种资源的总需求 = 日均 * 天数。
+               2. 每种资源的净需求 = MAX(0, 总需求 - 该资源的剩余补贴)。
+               3. 总净需求 = 电净需求 + 冷净需求 + 热净需求。
+               4. 最终需充值 = MAX(0, 总净需求 - 账户通用余额)。
+               
+               请输出 Markdown:
                - **需充值总额**: (向上取整到10元)
-               - **每人应付**: (精确到分)
-               - **分析**: 简述计算过程，提到补贴抵扣了多少。
-               - 📋 **催款文案**: 一句幽默的话。`
-            : `Calculate recharge with Markdown.
-               - Balance: ${currentBalance}
-               - Subsidy: ${totalSubsidy} (Deducts cost)
-               - Daily Burn: ${totalDailyAvg}
-               - Days: ${daysToCover}
-               - Roommates: ${roommates}
+               - **人均**: (精确到分)
+               - **分析**: 简述计算，提到各项补贴抵扣情况。
+               - 📋 **文案**: 幽默催款。`
+            : `Calculate recharge. Subsidies are specific to utility type.
                
-               Logic: Need = (Daily * Days) - Balance - Subsidy.
+               Data:
+               1. Elec: Daily ¥${dailyElec.toFixed(2)}, Subsidy ¥${subElec.toFixed(2)}
+               2. Cold: Daily ¥${dailyCold.toFixed(2)}, Subsidy ¥${subCold.toFixed(2)}
+               3. Hot: Daily ¥${dailyHot.toFixed(2)}, Subsidy ¥${subHot.toFixed(2)}
                
-               Output:
-               - **Total to Recharge**
-               - **Per Person**
-               - **Analysis**
-               - **Message**`;
+               Main Balance: ¥${overview.balance.toFixed(2)}
+               Days: ${daysToCover}
+               
+               Logic:
+               NetNeed_Type = MAX(0, (Daily * Days) - Subsidy_Type)
+               TotalNeed = Sum(NetNeed_Types) - MainBalance
+               
+               Output Markdown: Total, Per Person, Analysis, Message.`;
 
         const res = await aiService.ask(sysPrompt, userPrompt);
         setCalcResult(res);
@@ -474,7 +479,7 @@ const App: React.FC = () => {
   const CustomLegend = (props: any) => {
     const { payload } = props;
     return (
-      <div className="flex justify-center gap-3 md:gap-6 mt-6 flex-wrap px-2">
+      <div className="flex justify-center gap-4 sm:gap-8 mt-6 flex-wrap px-2">
         {payload.map((entry: any, index: number) => (
           <div key={`item-${index}`} className="flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
              <div className="w-2 h-2 rounded-full ring-2 ring-opacity-20 ring-offset-1 dark:ring-offset-gray-800 shrink-0" style={{ backgroundColor: entry.color, boxShadow: `0 0 10px ${entry.color}` }} />
@@ -483,6 +488,13 @@ const App: React.FC = () => {
              </span>
           </div>
         ))}
+        {/* Added Dashed Line Legend Item */}
+        <div className="flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
+             <div className="w-4 h-0 border-t-2 border-dashed border-gray-400 opacity-50"></div>
+             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+               {t.estimatedToday}
+             </span>
+        </div>
       </div>
     );
   };
@@ -972,14 +984,6 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="flex-1 w-full min-h-0 relative">
-                        {/* Legend for Estimated Line (Simple visual cue) */}
-                        <div className="absolute top-0 right-0 z-10 flex gap-2">
-                            <div className="flex items-center gap-1 text-[10px] text-gray-400 bg-white/80 dark:bg-black/20 backdrop-blur px-2 py-1 rounded">
-                                <div className="w-2 h-0.5 border-t-2 border-dashed border-gray-400"></div>
-                                <span>{t.estimatedToday}</span>
-                            </div>
-                        </div>
-
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={prepareChartData()} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#374151' : '#f3f4f6'} opacity={0.5} />
