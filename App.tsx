@@ -12,6 +12,7 @@ import {
 } from './types';
 import { LABELS } from './constants';
 import DataCard from './components/DataCard';
+import { MarkdownText } from './components/MarkdownText';
 import { 
   LineChart, 
   Line, 
@@ -133,7 +134,10 @@ const App: React.FC = () => {
 
   // AI & Calculator State
   const [aiSummary, setAiSummary] = useState('');
+  const [dailyBrief, setDailyBrief] = useState('');
+  const [trendAnalysis, setTrendAnalysis] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isTrendAiLoading, setIsTrendAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
   
   const [roommates, setRoommates] = useState(4);
@@ -190,6 +194,10 @@ const App: React.FC = () => {
       setOverview(MOCK_OVERVIEW);
       setRecords(MOCK_RECORDS);
       setTrends(generateMockTrends());
+      
+      // Fake AI Brief in Demo
+      setDailyBrief("☀️ 早安！又是元气满满的一天，记得节约用电哦~");
+      
       setIsLoading(false);
     }, 800);
   };
@@ -227,6 +235,12 @@ const App: React.FC = () => {
       setOverview(ov);
       setRecords(rec);
       setTrends(tr);
+      
+      // Trigger Daily Brief if AI Ready
+      if (enableAI && apiKey) {
+          aiService.initialize(apiKey, aiBaseUrl, aiProvider, aiModel);
+          aiService.generateDailyBrief(ov, lang).then(setDailyBrief).catch(console.error);
+      }
     } catch (err) {
       console.error(err);
       setErrorMsg(t.networkError);
@@ -277,6 +291,23 @@ const App: React.FC = () => {
     } finally {
       setIsAiLoading(false);
     }
+  };
+  
+  const handleTrendAnalysis = async () => {
+      if (!enableAI || !apiKey) {
+          setActiveTab('settings');
+          return;
+      }
+      setIsTrendAiLoading(true);
+      try {
+          aiService.initialize(apiKey, aiBaseUrl, aiProvider, aiModel);
+          const analysis = await aiService.generateTrendAnalysis(trends, lang);
+          setTrendAnalysis(analysis);
+      } catch (e: any) {
+          console.error(e);
+      } finally {
+          setIsTrendAiLoading(false);
+      }
   };
 
   const handleCalculateRecharge = async () => {
@@ -730,6 +761,16 @@ const App: React.FC = () => {
 
           {activeTab === 'overview' && overview && (
               <div className="animate-fade-in space-y-6">
+                  {/* Daily Brief Greeting */}
+                  {dailyBrief && (
+                      <div className="animate-fade-in mb-2 px-2">
+                          <p className="text-sm font-bold text-gray-500 dark:text-gray-400 italic flex items-center gap-2">
+                              <span>👋</span>
+                              <span>{dailyBrief}</span>
+                          </p>
+                      </div>
+                  )}
+
                   {/* Master Card - "Apple Wallet" Style */}
                   <div className="relative overflow-hidden rounded-[32px] bg-gray-900 dark:bg-gray-800 text-white p-8 shadow-2xl shadow-gray-900/20 dark:shadow-none min-h-[220px] flex flex-col justify-between group">
                       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full blur-[80px] opacity-40 group-hover:opacity-60 transition-opacity duration-1000 -mr-16 -mt-16 pointer-events-none"></div>
@@ -988,6 +1029,37 @@ const App: React.FC = () => {
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
+                </div>
+                
+                {/* AI Trend Analysis */}
+                <div className="bg-white dark:bg-gray-800 rounded-[32px] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-xl">
+                                <BrainCircuit size={20} />
+                            </div>
+                            <h4 className="font-bold text-gray-900 dark:text-white">AI 趋势解读</h4>
+                        </div>
+                        {!trendAnalysis && (
+                            <button 
+                                onClick={handleTrendAnalysis}
+                                disabled={isTrendAiLoading || !enableAI}
+                                className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl font-bold text-xs hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-2"
+                            >
+                                {isTrendAiLoading && <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>}
+                                {enableAI ? '生成分析' : '未启用 AI'}
+                            </button>
+                        )}
+                    </div>
+                    
+                    {trendAnalysis ? (
+                        <div className="animate-fade-in bg-gray-50 dark:bg-gray-700/30 p-4 rounded-2xl">
+                            <MarkdownText content={trendAnalysis} className="text-gray-600 dark:text-gray-300" />
+                            <button onClick={() => setTrendAnalysis('')} className="mt-3 text-xs text-gray-400 underline font-medium">重新生成</button>
+                        </div>
+                    ) : (
+                         <p className="text-xs text-gray-400 pl-1">点击生成基于当前图表数据的智能分析报告。</p>
+                    )}
                 </div>
               </div>
           )}

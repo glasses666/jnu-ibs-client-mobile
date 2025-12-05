@@ -48,21 +48,21 @@ export class AIService {
     });
 
     const langInstruction = lang === Language.ZH 
-      ? "请用中文回答。使用亲切、专业的语气。" 
-      : "Please answer in English. Use a friendly and professional tone.";
+      ? "请用中文回答。语气亲切专业。请务必使用 Markdown 格式（例如用 **粗体** 标注关键数字），并搭配适量 Emoji 🌟。" 
+      : "Please answer in English. Use Markdown (e.g. **bold** numbers) and Emojis 🌟.";
 
     const systemPrompt = `
       You are an energy efficiency assistant for a university student living in a dorm.
       Task:
-      1. Briefly summarize the current financial status (Balance and Total Cost this month).
-      2. Analyze usage trends. Identify which utility is the major cost driver.
-      3. Provide 3 specific, actionable tips to save money based on the data.
-      Output plain text only. Keep it concise (under 200 words).
+      1. Analyze the current month's financial status and usage mix.
+      2. Identify the main cost driver.
+      3. Provide 3 specific, actionable money-saving tips.
+      Format: Use Markdown bullet points. Keep it structured and concise.
     `;
 
     const userPrompt = `
       ${langInstruction}
-      Here is the user's utility usage data (JSON format):
+      Data:
       ${dataContext}
     `;
 
@@ -71,6 +71,48 @@ export class AIService {
     } else {
         return this.callOpenAICompatible(systemPrompt, userPrompt);
     }
+  }
+
+  async generateDailyBrief(overview: OverviewData, lang: Language): Promise<string> {
+      if (!this.apiKey) return "";
+      
+      const prompt = lang === Language.ZH
+        ? `作为宿舍小助手，请根据当前余额 ¥${overview.balance} 和总支出 ¥${overview.costs.total}，写一句**极简短**的早安/问候语（不超过20字）。
+           要求：元气满满，包含1-2个Emoji 🌤️。如果余额低于30元，提醒充值。`
+        : `Write a VERY short (max 15 words) cheerful daily greeting based on Balance ¥${overview.balance}. Warn if under 30. Use Emojis 🌤️.`;
+        
+      if (this.provider === 'google') {
+          return this.callGoogleGemini(prompt);
+      } else {
+          return this.callOpenAICompatible("You are a helpful assistant.", prompt);
+      }
+  }
+
+  async generateTrendAnalysis(trends: MetricalDataResult[], lang: Language): Promise<string> {
+      if (!this.apiKey) throw new Error("No API Key");
+      
+      // Simplify trend data for AI to save tokens
+      const simpleTrends = trends.map(t => ({
+          type: t.energyType,
+          last7Days: t.datas.slice(-7).map(d => d.dataValue)
+      }));
+      
+      const prompt = lang === Language.ZH
+        ? `分析以下最近7天的水电用量趋势。
+           数据: ${JSON.stringify(simpleTrends)} (Type 2=电, 3=冷水, 4=热水)
+           任务：
+           1. 指出是否有异常的用量高峰 📈。
+           2. 评价整体用量稳定性。
+           3. 给出一条针对性的建议。
+           格式：Markdown，使用 **粗体** 强调重点，使用 Emoji。`
+        : `Analyze last 7 days utility trends. Data: ${JSON.stringify(simpleTrends)}. 
+           Identify peaks 📈 and stability. Give 1 advice. Use Markdown & Emojis.`;
+
+       if (this.provider === 'google') {
+          return this.callGoogleGemini(prompt);
+      } else {
+          return this.callOpenAICompatible("You are a data analyst.", prompt);
+      }
   }
 
   // Generic method for other tasks like Bill Calculation
