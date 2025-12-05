@@ -474,11 +474,11 @@ const App: React.FC = () => {
   const CustomLegend = (props: any) => {
     const { payload } = props;
     return (
-      <div className="flex justify-center gap-6 mt-6 flex-wrap">
+      <div className="flex justify-center gap-3 md:gap-6 mt-6 flex-wrap px-2">
         {payload.map((entry: any, index: number) => (
-          <div key={`item-${index}`} className="flex items-center gap-2">
-             <div className="w-2 h-2 rounded-full ring-2 ring-opacity-20 ring-offset-1 dark:ring-offset-gray-800" style={{ backgroundColor: entry.color, boxShadow: `0 0 10px ${entry.color}` }} />
-             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          <div key={`item-${index}`} className="flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
+             <div className="w-2 h-2 rounded-full ring-2 ring-opacity-20 ring-offset-1 dark:ring-offset-gray-800 shrink-0" style={{ backgroundColor: entry.color, boxShadow: `0 0 10px ${entry.color}` }} />
+             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                {entry.value}
              </span>
           </div>
