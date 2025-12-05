@@ -964,13 +964,13 @@ const App: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-[32px] shadow-[0_2px_20px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 h-[65vh] min-h-[450px] flex flex-col">
                     
                     {/* Trends Header with Controls */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-                        <h3 className="font-bold text-lg dark:text-white flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+                        <h3 className="font-bold text-lg dark:text-white flex items-center gap-2 sm:flex-1">
                             <TrendingUp size={20} className="text-primary"/>
                             {t.trends}
                         </h3>
                         
-                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-xl">
+                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-xl mx-auto sm:mx-0">
                             <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-all text-gray-500 dark:text-gray-300">
                                 <ChevronRight size={18} className="rotate-180" />
                             </button>
