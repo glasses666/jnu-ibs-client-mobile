@@ -565,8 +565,8 @@ const App: React.FC = () => {
         return (
             <CloudAuth 
                 onLoginSuccess={(user) => {
-                    // Simulate Cloud Login linking to a room
-                    // In real app, fetch user's room from DB
+                    setShowCloudAuth(false);
+                    // For now, assume T8201 and auto-login
                     setLoginRoom('T8201'); 
                     handleLogin({ preventDefault: () => {} } as any);
                 }}

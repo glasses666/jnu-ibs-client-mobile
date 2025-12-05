@@ -33,14 +33,23 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ onLoginSuccess, onAdminLog
       if (isLogin) {
         const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
         if (authError) throw authError;
-        if (data.user) onLoginSuccess(data.user);
+        if (data.user) {
+            onLoginSuccess(data.user);
+        } else {
+            setError("登录成功但未获取到用户信息。");
+        }
       } else {
         const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
         if (signUpError) throw signUpError;
-        if (data.user) onLoginSuccess(data.user); // Auto-login after signup
+        if (data.user) {
+            onLoginSuccess(data.user); 
+        } else {
+            setError("注册成功，请查收验证邮件（如果已开启验证）。");
+        }
       }
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      console.error(err);
+      setError(err.message || '发生未知错误，请重试。');
     } finally {
       setIsLoading(false);
     }
