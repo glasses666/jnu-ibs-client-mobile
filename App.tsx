@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { ibsService } from './services/ibsService';
 import { aiService } from './services/geminiService';
@@ -641,6 +642,10 @@ const App: React.FC = () => {
                               />
                               <span className="font-bold text-xl w-10 text-center">{daysToCover}</span>
                           </div>
+                          <div className="flex justify-between text-[10px] text-gray-400 px-1 mt-1 font-medium">
+                              <span>7 Days</span>
+                              <span>90 Days</span>
+                          </div>
                       </div>
 
                       <div className="pt-2">
@@ -674,7 +679,36 @@ const App: React.FC = () => {
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-80 fixed inset-y-0 left-0 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-50">
-        {/* ... Sidebar Content ... */}
+        <div className="p-8 pb-4">
+            <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
+                    <Zap size={20} fill="currentColor" />
+                </div>
+                <h1 className="text-2xl font-black tracking-tight">IBS Client</h1>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+              <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+                      {overview?.room?.substring(0, 1)}
+                  </div>
+                  <div>
+                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Room</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{overview?.room}</p>
+                  </div>
+              </div>
+            </div>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-1">
+            <SidebarItem icon={<LayoutDashboard size={20}/>} label={t.dashboard} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+            <SidebarItem icon={<Activity size={20}/>} label={t.trends} active={activeTab === 'trends'} onClick={() => setActiveTab('trends')} />
+            <SidebarItem icon={<History size={20}/>} label={t.records} active={activeTab === 'records'} onClick={() => setActiveTab('records')} />
+            <div className="pt-4 mt-4 border-t border-gray-50 dark:border-gray-800/50">
+                <SidebarItem icon={<Settings size={20}/>} label={t.settings} active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+            </div>
+        </nav>
+
         <div className="p-6">
              <button onClick={handleLogout} className="flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 w-full p-3 rounded-2xl transition-colors font-bold text-sm">
                  <LogOut size={16} />
@@ -721,7 +755,11 @@ const App: React.FC = () => {
                     )}
                 </div>
               </div>
-              <button onClick={handleRefresh} className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-gray-500 hover:text-primary border border-gray-100 dark:border-gray-700 shadow-sm transition-all">
+              
+              <button 
+                onClick={handleRefresh}
+                className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-gray-500 hover:text-primary border border-gray-100 dark:border-gray-700 shadow-sm transition-all"
+              >
                   <RefreshCw size={18} className={`transition-transform duration-700 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180'}`} />
                   <span className="font-bold text-xs uppercase tracking-wider">{t.refresh}</span>
               </button>
@@ -738,6 +776,38 @@ const App: React.FC = () => {
                           </div>
                           <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700"></div>
                       </div>
+                      <div className="flex justify-between items-end">
+                          <div className="space-y-2">
+                              <div className="h-3 w-20 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                              <div className="h-6 w-32 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                          </div>
+                          <div className="h-8 w-28 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                      </div>
+                  </div>
+
+                  {/* Skeleton Toggles */}
+                  <div className="flex justify-end gap-3">
+                      <div className="h-8 w-32 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+                      <div className="h-8 w-32 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+                  </div>
+
+                  {/* Skeleton Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[1, 2, 3].map(i => (
+                          <div key={i} className="bg-white dark:bg-gray-800 rounded-3xl p-5 h-32 flex flex-col justify-between border border-gray-100 dark:border-gray-800">
+                              <div className="flex justify-between">
+                                  <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-gray-700"></div>
+                                  <div className="w-12 h-5 rounded-full bg-gray-100 dark:bg-gray-700"></div>
+                              </div>
+                              <div className="space-y-2">
+                                  <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                  <div className="flex justify-between">
+                                      <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                      <div className="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                  </div>
+                              </div>
+                          </div>
+                      ))}
                   </div>
               </div>
           )}
@@ -800,19 +870,32 @@ const App: React.FC = () => {
                   {/* Toggles (Unit Only) */}
                   <div className="flex justify-end gap-3 animate-fade-in-up delay-100">
                       <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl inline-flex transition-colors duration-300">
-                          <button onClick={() => setDisplayUnit('money')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${displayUnit === 'money' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}>{t.showMoney}</button>
-                          <button onClick={() => setDisplayUnit('unit')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${displayUnit === 'unit' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}>{t.showUnit}</button>
+                          <button 
+                             onClick={() => setDisplayUnit('money')}
+                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${displayUnit === 'money' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
+                          >
+                             {t.showMoney}
+                          </button>
+                          <button 
+                             onClick={() => setDisplayUnit('unit')}
+                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${displayUnit === 'unit' ? 'bg-white dark:bg-gray-600 shadow-sm text-black dark:text-white' : 'text-gray-500'}`}
+                          >
+                             {t.showUnit}
+                          </button>
                       </div>
                   </div>
 
-                  {/* Details Grid */}
+                  {/* Details Grid - Bento Style */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in-up delay-200">
                       <DataCard 
                           title={t.electricity}
                           animatedValue={displayUnit === 'money' ? overview.costs.elec : overview.details.elec[0]}
                           formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitKwh}`}
                           subValue={displayUnit === 'money' ? `${overview.details.elec[0]} ${t.unitKwh}` : formatMoney(overview.costs.elec)}
-                          subsidy={displayUnit === 'money' ? formatMoney(overview.subsidyMoney?.elec || 0) : `${overview.subsidy?.elec || 0} ${t.unitKwh}`}
+                          subsidy={displayUnit === 'money' 
+                              ? formatMoney(overview.subsidyMoney?.elec || 0)
+                              : `${overview.subsidy?.elec || 0} ${t.unitKwh}`
+                          }
                           subsidyVariant={(overview.subsidy?.elec || 0) > 0 ? 'success' : 'danger'}
                           icon={<Zap size={22}/>}
                           colorClass="text-yellow-600 bg-yellow-400"
@@ -824,7 +907,10 @@ const App: React.FC = () => {
                           animatedValue={displayUnit === 'money' ? overview.costs.cold : overview.details.cold[0]}
                           formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitM3}`}
                           subValue={displayUnit === 'money' ? `${overview.details.cold[0]} ${t.unitM3}` : formatMoney(overview.costs.cold)}
-                          subsidy={displayUnit === 'money' ? formatMoney(overview.subsidyMoney?.cold || 0) : `${overview.subsidy?.cold || 0} ${t.unitM3}`}
+                          subsidy={displayUnit === 'money' 
+                              ? formatMoney(overview.subsidyMoney?.cold || 0)
+                              : `${overview.subsidy?.cold || 0} ${t.unitM3}`
+                          }
                           subsidyVariant={(overview.subsidy?.cold || 0) > 0 ? 'success' : 'danger'}
                           icon={<Droplet size={22}/>}
                           colorClass="text-blue-600 bg-blue-400"
@@ -836,7 +922,10 @@ const App: React.FC = () => {
                           animatedValue={displayUnit === 'money' ? overview.costs.hot : overview.details.hot[0]}
                           formatFn={displayUnit === 'money' ? formatMoney : (v) => `${v.toFixed(2)} ${t.unitM3}`}
                           subValue={displayUnit === 'money' ? `${overview.details.hot[0]} ${t.unitM3}` : formatMoney(overview.costs.hot)}
-                          subsidy={displayUnit === 'money' ? formatMoney(overview.subsidyMoney?.hot || 0) : `${overview.subsidy?.hot || 0} ${t.unitM3}`}
+                          subsidy={displayUnit === 'money' 
+                              ? formatMoney(overview.subsidyMoney?.hot || 0)
+                              : `${overview.subsidy?.hot || 0} ${t.unitM3}`
+                          }
                           subsidyVariant={(overview.subsidy?.hot || 0) > 0 ? 'success' : 'danger'}
                           icon={<Flame size={22}/>}
                           colorClass="text-orange-600 bg-orange-400"
@@ -849,31 +938,67 @@ const App: React.FC = () => {
           {activeTab === 'trends' && (
               <div className="space-y-6 animate-fade-in">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-[32px] shadow-[0_2px_20px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 h-[65vh] min-h-[450px] flex flex-col">
+                    
+                    {/* Trends Header with Controls */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                         <h3 className="font-bold text-lg dark:text-white flex items-center gap-2">
                             <TrendingUp size={20} className="text-primary"/>
                             {t.trends}
                         </h3>
+                        
                         <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-xl">
-                            <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-all text-gray-500 dark:text-gray-300"><ChevronRight size={18} className="rotate-180" /></button>
-                            <span className="text-xs font-bold w-24 text-center text-gray-900 dark:text-white">{chartDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })}</span>
-                            <button onClick={() => changeMonth(1)} disabled={new Date(chartDate).setMonth(chartDate.getMonth() + 1) > Date.now()} className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-all text-gray-500 dark:text-gray-300 disabled:opacity-30 disabled:hover:bg-transparent"><ChevronRight size={18} /></button>
+                            <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-all text-gray-500 dark:text-gray-300">
+                                <ChevronRight size={18} className="rotate-180" />
+                            </button>
+                            <span className="text-xs font-bold w-24 text-center text-gray-900 dark:text-white">
+                                {chartDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })}
+                            </span>
+                            <button onClick={() => changeMonth(1)} disabled={new Date(chartDate).setMonth(chartDate.getMonth() + 1) > Date.now()} className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-all text-gray-500 dark:text-gray-300 disabled:opacity-30 disabled:hover:bg-transparent">
+                                <ChevronRight size={18} />
+                            </button>
                         </div>
                     </div>
 
                     <div className="flex-1 w-full min-h-0 relative">
+                        {/* Legend for Estimated Line (Simple visual cue) */}
                         <div className="absolute top-0 right-0 z-10 flex gap-2">
                             <div className="flex items-center gap-1 text-[10px] text-gray-400 bg-white/80 dark:bg-black/20 backdrop-blur px-2 py-1 rounded">
                                 <div className="w-2 h-0.5 border-t-2 border-dashed border-gray-400"></div>
                                 <span>{t.estimatedToday}</span>
                             </div>
                         </div>
+
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={prepareChartData()} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#374151' : '#f3f4f6'} opacity={0.5} />
-                                <XAxis dataKey="name" stroke={isDark ? '#6b7280' : '#9ca3af'} fontSize={10} tickLine={false} axisLine={false} dy={10} fontWeight={500} />
-                                <YAxis stroke={isDark ? '#6b7280' : '#9ca3af'} fontSize={10} tickLine={false} axisLine={false} fontWeight={500} />
-                                <Tooltip contentStyle={{ backgroundColor: isDark ? '#1f2937' : '#fff', borderColor: isDark ? '#374151' : '#fff', borderRadius: '16px', padding: '12px' }} />
+                                <XAxis 
+                                    dataKey="name" 
+                                    stroke={isDark ? '#6b7280' : '#9ca3af'} 
+                                    fontSize={10} 
+                                    tickLine={false} 
+                                    axisLine={false} 
+                                    dy={10}
+                                    fontWeight={500}
+                                />
+                                <YAxis 
+                                    stroke={isDark ? '#6b7280' : '#9ca3af'} 
+                                    fontSize={10} 
+                                    tickLine={false} 
+                                    axisLine={false}
+                                    fontWeight={500}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        backgroundColor: isDark ? '#1f2937' : '#fff', 
+                                        borderColor: isDark ? '#374151' : '#fff',
+                                        borderRadius: '16px',
+                                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                                        padding: '12px'
+                                    }} 
+                                    itemStyle={{ fontSize: '12px', fontWeight: 600, padding: '2px 0' }}
+                                    labelStyle={{ color: isDark ? '#9ca3af' : '#6b7280', marginBottom: '8px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                                    cursor={{ stroke: isDark ? '#374151' : '#e5e7eb', strokeWidth: 2 }}
+                                />
                                 <Line type="natural" dataKey="elec" name={t.electricity} stroke="#eab308" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} animationDuration={1000} strokeDasharray={3} />
                                 <Line type="natural" dataKey="cold" name={t.coldWater} stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} animationDuration={1000} />
                                 <Line type="natural" dataKey="hot" name={t.hotWater} stroke="#f97316" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} animationDuration={1000} />
