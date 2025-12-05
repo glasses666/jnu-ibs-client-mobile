@@ -3,7 +3,8 @@ import { Preferences } from '@capacitor/preferences';
 export const StorageKeys = {
   THEME: 'theme',
   LANG: 'lang',
-  AI_CONFIG: 'ai_config'
+  AI_CONFIG: 'ai_config',
+  CURRENCY: 'currency' // Added CURRENCY
 };
 
 export const saveConfig = async (key: string, value: any) => {

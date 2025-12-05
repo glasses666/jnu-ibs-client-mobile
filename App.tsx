@@ -13,6 +13,16 @@ import {
 } from './types';
 import { LABELS } from './constants';
 import DataCard from './components/DataCard';
+
+// Add local interface for AI Config storage
+interface AIConfig {
+  enableAI: boolean;
+  apiKey: string;
+  baseUrl?: string;
+  provider?: AIProvider;
+  model?: string;
+}
+
 import { CountUp } from './components/CountUp';
 import { MarkdownText } from './components/MarkdownText';
 import { 
@@ -153,7 +163,12 @@ const App: React.FC = () => {
       const savedLang = await loadConfig(StorageKeys.LANG, Language.ZH);
       setLang(savedLang as Language);
       
-      const aiConfig = await loadConfig(StorageKeys.AI_CONFIG, {});
+      const aiConfig = await loadConfig<AIConfig>(StorageKeys.AI_CONFIG, { 
+          enableAI: false, 
+          apiKey: '',
+          provider: 'google' 
+      });
+      
       if (aiConfig.apiKey) {
           setApiKey(aiConfig.apiKey);
           setEnableAI(aiConfig.enableAI);
@@ -161,7 +176,7 @@ const App: React.FC = () => {
           setAiBaseUrl(aiConfig.baseUrl || '');
           setAiModel(aiConfig.model || '');
       }
-      const savedCurrency = await loadConfig(StorageKeys.CURRENCY, 'CNY'); // Load currency from storage
+      const savedCurrency = await loadConfig<string>(StorageKeys.CURRENCY, 'CNY'); 
       setCurrency(savedCurrency as 'CNY' | 'USD');
 
     };
