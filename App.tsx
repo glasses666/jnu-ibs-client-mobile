@@ -838,9 +838,12 @@ const App: React.FC = () => {
                               </h3>
                           </div>
                           <div className="flex flex-col gap-3">
-                            <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-                                <Wallet size={24} className="text-white" />
-                            </div>
+                            <button 
+                                onClick={() => setShowCalculator(true)}
+                                className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all active:scale-90 group/calc"
+                            >
+                                <Calculator size={24} className="text-white opacity-80 group-hover/calc:opacity-100" />
+                            </button>
                           </div>
                       </div>
 
@@ -860,13 +863,7 @@ const App: React.FC = () => {
                             </div>
                           </div>
                           
-                          <button 
-                            onClick={() => setShowCalculator(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/10 active:scale-95"
-                          >
-                              <Calculator size={14} className="shrink-0" />
-                              <span className="text-[10px] md:text-xs font-bold uppercase tracking-wide whitespace-nowrap">{t.calculator}</span>
-                          </button>
+                          {/* Removed old text button from here */}
                       </div>
                   </div>
                   
