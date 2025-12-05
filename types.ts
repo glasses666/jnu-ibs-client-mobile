@@ -60,6 +60,11 @@ export interface OverviewData {
     cold: number;
     hot: number;
   };
+  subsidyMoney: {
+    elec: number;
+    cold: number;
+    hot: number;
+  };
   details: {
     elec: [number, number]; // [usage, price]
     cold: [number, number];

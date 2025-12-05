@@ -159,6 +159,7 @@ export class IBSService {
       balance: 0.0,
       costs: { elec: 0, cold: 0, hot: 0, total: 0 },
       subsidy: { elec: 0, cold: 0, hot: 0 },
+      subsidyMoney: { elec: 0, cold: 0, hot: 0 },
       details: { elec: [0, 0], cold: [0, 0], hot: [0, 0] }
     };
 
@@ -166,7 +167,7 @@ export class IBSService {
         if(infoRes.d.ResultList && infoRes.d.ResultList.length > 0) {
             const roomInfo = infoRes.d.ResultList[0].roomInfo;
              const balanceItem = roomInfo.find(i => i.keyName.includes('余额'));
-             if (balanceItem) data.balance = parseFloat(balanceItem.keyValue);
+             if (balanceItem) data.balance = parseFloat(parseFloat(balanceItem.keyValue).toFixed(2));
         }
     } catch (e) {
         console.warn("Error parsing balance", e);
@@ -175,17 +176,29 @@ export class IBSService {
     const billList = billRes.d.ResultList || [];
     const subList = allowanceRes.d.ResultList || [];
 
-    const getSubsidy = (typeId: number): number => {
-        // Find subsidy item where itemType matches energyType
-        // Note: The API might use string or number for itemType
+    const getSubsidyData = (typeId: number) => {
         const item = subList.find(x => Number(x.itemType) === typeId);
-        return item ? parseFloat(item.avalibleValue.toString() || '0') : 0;
+        const val = item ? parseFloat(item.avalibleValue.toString() || '0') : 0;
+        const rate = RATES[typeId] || 0;
+        return {
+            val: parseFloat(val.toFixed(2)),
+            money: parseFloat((val * rate).toFixed(2))
+        };
     };
     
+    const subElec = getSubsidyData(EnergyType.ELEC);
+    const subCold = getSubsidyData(EnergyType.COLD_WATER);
+    const subHot = getSubsidyData(EnergyType.HOT_WATER);
+
     data.subsidy = {
-        elec: getSubsidy(EnergyType.ELEC),
-        cold: getSubsidy(EnergyType.COLD_WATER),
-        hot: getSubsidy(EnergyType.HOT_WATER)
+        elec: subElec.val,
+        cold: subCold.val,
+        hot: subHot.val
+    };
+    data.subsidyMoney = {
+        elec: subElec.money,
+        cold: subCold.money,
+        hot: subHot.money
     };
 
     const getDetails = (typeId: number): {cost: number, usage: number, price: number} => {
