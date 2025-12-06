@@ -4,16 +4,16 @@ import { aiService } from './services/geminiService';
 import { weatherService, WeatherData } from './services/weatherService';
 import { loadConfig, saveConfig, StorageKeys } from './services/storageService';
 import { Capacitor } from '@capacitor/core';
-import {
-  JNUResponse,
-  OverviewData,
-  UserInfoResult,
-  SubsidyItem,
-  BillItem,
-  PaymentRecord,
-  MetricalDataResult,
-  EnergyType
-} from './types';import { LABELS, API_BASE_URL } from './constants';
+import { 
+  JNUResponse, 
+  OverviewData, 
+  PaymentRecord, 
+  MetricalDataResult, 
+  Language,
+  EnergyType,
+  AIProvider
+} from './types';
+import { LABELS, API_BASE_URL } from './constants';
 import DataCard from './components/DataCard';
 
 // Add local interface for AI Config storage
