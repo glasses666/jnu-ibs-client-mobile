@@ -166,11 +166,11 @@ const App: React.FC = () => {
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [isConfigLoaded, setIsConfigLoaded] = useState(false); 
-  const [customApiUrl, setCustomApiUrl] = useState('');
-  const [showServerConfig, setShowServerConfig] = useState(false);
-
-  const t = LABELS[lang];
-
+    const [customApiUrl, setCustomApiUrl] = useState('');
+    const [showServerConfig, setShowServerConfig] = useState(false); 
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false); // New state for collapsing settings
+  
+    const t = LABELS[lang];
   // --- Initialization (Persistence) ---
   useEffect(() => {
     const init = async () => {
@@ -689,14 +689,6 @@ const App: React.FC = () => {
 
         <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[32px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] p-8 border border-white/50 dark:border-gray-700 relative">
           
-          {/* Server Config Entry */}
-          <button 
-             onClick={() => setShowServerConfig(true)}
-             className="absolute top-6 left-6 p-2 rounded-full text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
-          >
-             <Settings size={20} />
-          </button>
-
           {/* Subtle Cloud Login Entry */}
           <button 
              onClick={() => setShowCloudAuth(true)}
@@ -758,6 +750,12 @@ const App: React.FC = () => {
                className="text-xs font-bold text-gray-400 hover:text-primary transition-colors tracking-wide uppercase"
              >
                 {t.tryDemo}
+             </button>
+             <button 
+               onClick={() => setShowServerConfig(true)}
+               className="text-[10px] font-bold text-gray-300 dark:text-gray-600 hover:text-gray-500 transition-colors uppercase"
+             >
+                Server Config
              </button>
           </div>
         </div>
@@ -1317,27 +1315,38 @@ const App: React.FC = () => {
                         )}
                    </div>
 
-                   {/* Advanced Settings */}
-                   <div className="bg-white dark:bg-gray-800 rounded-[32px] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-                        <h3 className="text-lg font-bold mb-6 dark:text-white">Advanced</h3>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Custom Server URL</label>
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                                    <LinkIcon size={18} />
+                   {/* Advanced Settings (Collapsible) */}
+                   <div className="bg-white dark:bg-gray-800 rounded-[32px] px-6 py-4 shadow-sm border border-gray-100 dark:border-gray-800">
+                        <button 
+                            onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                            className="w-full flex items-center justify-between"
+                        >
+                            <h3 className="text-lg font-bold dark:text-white">Advanced</h3>
+                            <ChevronRight size={20} className={`text-gray-400 transition-transform duration-300 ${showAdvancedSettings ? 'rotate-90' : ''}`} />
+                        </button>
+                        
+                        {showAdvancedSettings && (
+                            <div className="mt-6 space-y-4 animate-fade-in-down">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Custom Server URL</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                            <LinkIcon size={18} />
+                                        </div>
+                                        <input 
+                                            type="text" 
+                                            value={customApiUrl} 
+                                            onChange={(e) => setCustomApiUrl(e.target.value)} 
+                                            placeholder={API_BASE_URL} 
+                                            className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-medium dark:text-white text-xs" 
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-2 ml-1 font-medium">
+                                        Use Cloudflare Tunnel or Proxy. Leave empty for default.
+                                    </p>
                                 </div>
-                                <input 
-                                    type="text" 
-                                    value={customApiUrl} 
-                                    onChange={(e) => setCustomApiUrl(e.target.value)} 
-                                    placeholder={API_BASE_URL} 
-                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-medium dark:text-white text-xs" 
-                                />
                             </div>
-                            <p className="text-[10px] text-gray-400 mt-2 ml-1 font-medium">
-                                Use Cloudflare Tunnel or Proxy. Leave empty for default.
-                            </p>
-                        </div>
+                        )}
                    </div>
 
                    <div className="pt-2">
