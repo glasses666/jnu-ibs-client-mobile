@@ -26,6 +26,7 @@ interface AIConfig {
 import { CountUp } from './components/CountUp';
 import { MarkdownText } from './components/MarkdownText';
 import { CloudAuth } from './components/CloudAuth';
+import { RoomBinding } from './components/RoomBinding';
 import { supabase } from './services/supabaseClient';
 import { 
   LineChart, 
@@ -156,7 +157,9 @@ const App: React.FC = () => {
   
   // Cloud Auth State
   const [showCloudAuth, setShowCloudAuth] = useState(false);
-  
+  const [showBinding, setShowBinding] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
+
   // Config Loading State (Prevents overwriting storage during init)
   const [isConfigLoaded, setIsConfigLoaded] = useState(false);
 
@@ -561,14 +564,45 @@ const App: React.FC = () => {
 
   // --- Render Login ---
   if (!isLoggedIn) {
+    if (showBinding) {
+        return (
+            <RoomBinding 
+                userId={currentUserId}
+                onBindSuccess={(roomId) => {
+                    setShowBinding(false);
+                    setLoginRoom(roomId);
+                    // Slight delay to allow state update
+                    setTimeout(() => {
+                        handleLogin({ preventDefault: () => {} } as any);
+                    }, 100);
+                }}
+            />
+        );
+    }
+
     if (showCloudAuth) {
         return (
             <CloudAuth 
-                onLoginSuccess={(user) => {
+                onLoginSuccess={async (user) => {
+                    // Check if user has a bound room
+                    const { data, error } = await supabase
+                        .from('user_bindings')
+                        .select('room_id')
+                        .eq('user_id', user.id)
+                        .single();
+                    
                     setShowCloudAuth(false);
-                    // For now, assume T50622 and auto-login
-                    setLoginRoom('T50622'); 
-                    handleLogin({ preventDefault: () => {} } as any);
+
+                    if (data && data.room_id) {
+                        setLoginRoom(data.room_id); 
+                        setTimeout(() => {
+                            handleLogin({ preventDefault: () => {} } as any);
+                        }, 100);
+                    } else {
+                        // No binding, show binding screen
+                        setCurrentUserId(user.id);
+                        setShowBinding(true);
+                    }
                 }}
                 onAdminLogin={() => {
                     alert("管理员通道已激活");
