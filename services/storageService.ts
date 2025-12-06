@@ -4,7 +4,8 @@ export const StorageKeys = {
   THEME: 'theme',
   LANG: 'lang',
   AI_CONFIG: 'ai_config',
-  CURRENCY: 'currency' // Added CURRENCY
+  CURRENCY: 'currency',
+  CUSTOM_API_URL: 'custom_api_url'
 };
 
 export const saveConfig = async (key: string, value: any) => {

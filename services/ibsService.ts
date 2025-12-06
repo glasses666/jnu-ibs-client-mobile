@@ -15,6 +15,17 @@ import {
 export class IBSService {
   private userId: string | null = null;
   private room: string | null = null;
+  private baseUrl: string = API_BASE_URL;
+
+  // New method to override Base URL
+  setBaseUrl(url: string) {
+    if (!url) {
+        this.baseUrl = API_BASE_URL;
+    } else {
+        // Ensure trailing slash
+        this.baseUrl = url.endsWith('/') ? url : `${url}/`;
+    }
+  }
 
   isLoggedIn(): boolean {
     return !!this.userId;
@@ -60,9 +71,9 @@ export class IBSService {
     };
 
     try {
-      // Use CapacitorHttp for Native requests to bypass CORS
+      // Use dynamic baseUrl
       const response = await CapacitorHttp.post({
-        url: `${API_BASE_URL}Login`,
+        url: `${this.baseUrl}Login`,
         headers: { 'Content-Type': 'application/json' },
         data: payload
       });
@@ -71,7 +82,6 @@ export class IBSService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // CapacitorHttp returns parsed JSON in 'data' if content-type is json
       const data: JNUResponse<{ customerId: string }> = response.data;
       
       if (data.d.Success && data.d.ResultList && data.d.ResultList.length > 0) {
@@ -89,7 +99,7 @@ export class IBSService {
 
   private async post<T>(endpoint: string, body: any = {}): Promise<JNUResponse<T>> {
     const response = await CapacitorHttp.post({
-      url: `${API_BASE_URL}${endpoint}`,
+      url: `${this.baseUrl}${endpoint}`,
       headers: this.getHeaders(),
       data: body
     });
@@ -99,7 +109,6 @@ export class IBSService {
   }
 
   async fetchOverview(): Promise<OverviewData> {
-    // Parallel requests
     const [infoRes, allowanceRes, billRes] = await Promise.all([
       this.post<UserInfoResult>('GetUserInfo'),
       this.post<SubsidyItem>('GetSubsidy', { startDate: '2000-01-01', endDate: '2099-12-31' }),

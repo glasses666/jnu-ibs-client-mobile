@@ -11,7 +11,7 @@ import {
   EnergyType,
   AIProvider
 } from './types';
-import { LABELS } from './constants';
+import { LABELS, API_BASE_URL } from './constants';
 import DataCard from './components/DataCard';
 
 // Add local interface for AI Config storage
@@ -70,7 +70,8 @@ import {
   Calculator,
   X,
   Copy,
-  CircleDollarSign
+  CircleDollarSign,
+  Cloud
 } from 'lucide-react';
 
 // --- MOCK DATA FOR DEMO MODE ---
@@ -162,7 +163,8 @@ const App: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState('');
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
   const [userName, setUserName] = useState('');
-  const [isConfigLoaded, setIsConfigLoaded] = useState(false); // New state
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false); 
+  const [customApiUrl, setCustomApiUrl] = useState('');
 
   const t = LABELS[lang];
 
@@ -190,19 +192,26 @@ const App: React.FC = () => {
       }
       const savedCurrency = await loadConfig<string>(StorageKeys.CURRENCY, 'CNY'); 
       setCurrency(savedCurrency as 'CNY' | 'USD');
-      
-      setIsConfigLoaded(true);
+
+      const savedApiUrl = await loadConfig<string>(StorageKeys.CUSTOM_API_URL, '');
+      setCustomApiUrl(savedApiUrl);
+      if (savedApiUrl) ibsService.setBaseUrl(savedApiUrl);
+
+      setIsConfigLoaded(true); // All configurations loaded
     };
     init();
   }, []);
 
   // Save config on changes
-  useEffect(() => { if(isConfigLoaded) saveConfig(StorageKeys.THEME, isDark ? 'dark' : 'light'); }, [isDark, isConfigLoaded]);
-  useEffect(() => { if(isConfigLoaded) saveConfig(StorageKeys.LANG, lang); }, [lang, isConfigLoaded]);
-  useEffect(() => { if(isConfigLoaded) saveConfig(StorageKeys.CURRENCY, currency); }, [currency, isConfigLoaded]); 
+  useEffect(() => { saveConfig(StorageKeys.THEME, isDark ? 'dark' : 'light'); }, [isDark]);
+  useEffect(() => { saveConfig(StorageKeys.LANG, lang); }, [lang]);
+  useEffect(() => { saveConfig(StorageKeys.CURRENCY, currency); }, [currency]); 
   useEffect(() => { 
-      if(isConfigLoaded) {
-          saveConfig(StorageKeys.AI_CONFIG, { 
+      saveConfig(StorageKeys.CUSTOM_API_URL, customApiUrl);
+      ibsService.setBaseUrl(customApiUrl);
+  }, [customApiUrl]);
+  useEffect(() => { 
+      saveConfig(StorageKeys.AI_CONFIG, {
               enableAI, apiKey, baseUrl: aiBaseUrl, provider: aiProvider, model: aiModel 
           }); 
       }
@@ -595,9 +604,9 @@ const App: React.FC = () => {
         return (
             <RoomBinding 
                 userId={currentUserId}
-                onBindSuccess={(roomId) => {
+                onBindSuccess={(roomId, nickname) => {
                     setShowBinding(false);
-                    setUserName('New User'); // Or fetch name
+                    setUserName(nickname);
                     setIsAutoLoggingIn(true);
                     handleLogin(undefined, roomId);
                 }}
@@ -609,17 +618,17 @@ const App: React.FC = () => {
         return (
             <CloudAuth 
                 onLoginSuccess={async (user) => {
-                    // Check if user has a bound room
+                    // Check if user has a bound room and get nickname
                     const { data, error } = await supabase
                         .from('user_bindings')
-                        .select('room_id')
+                        .select('room_id, nickname')
                         .eq('user_id', user.id)
                         .single();
                     
                     setShowCloudAuth(false);
-                    setUserName(user.email || 'User');
 
                     if (data && data.room_id) {
+                        setUserName(data.nickname || user.email?.split('@')[0] || 'User');
                         setIsAutoLoggingIn(true);
                         handleLogin(undefined, data.room_id);
                     } else {
@@ -637,7 +646,16 @@ const App: React.FC = () => {
 
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#f2f4f6] dark:bg-gray-900 transition-colors">
-        <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[32px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] p-8 border border-white/50 dark:border-gray-700">
+        <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[32px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] p-8 border border-white/50 dark:border-gray-700 relative">
+          
+          {/* Subtle Cloud Login Entry */}
+          <button 
+             onClick={() => setShowCloudAuth(true)}
+             className="absolute top-6 right-6 p-2 rounded-full text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
+          >
+             <Cloud size={20} />
+          </button>
+
           <div className="flex justify-between items-center mb-10">
             <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
                 <Zap size={24} fill="currentColor" />
@@ -686,12 +704,6 @@ const App: React.FC = () => {
           </form>
 
           <div className="mt-8 flex flex-col items-center gap-4">
-             <button 
-               onClick={() => setShowCloudAuth(true)}
-               className="w-full py-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 hover:text-primary hover:border-primary transition-all font-bold text-sm"
-             >
-                使用云端账号登录
-             </button>
              <button 
                onClick={enterDemoMode}
                className="text-xs font-bold text-gray-400 hover:text-primary transition-colors tracking-wide uppercase"
@@ -1250,6 +1262,29 @@ const App: React.FC = () => {
                                 </div>
                             </div>
                         )}
+                   </div>
+
+                   {/* Advanced Settings */}
+                   <div className="bg-white dark:bg-gray-800 rounded-[32px] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+                        <h3 className="text-lg font-bold mb-6 dark:text-white">Advanced</h3>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Custom Server URL</label>
+                            <div className="relative">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <LinkIcon size={18} />
+                                </div>
+                                <input 
+                                    type="text" 
+                                    value={customApiUrl} 
+                                    onChange={(e) => setCustomApiUrl(e.target.value)} 
+                                    placeholder={API_BASE_URL} 
+                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-medium dark:text-white text-xs" 
+                                />
+                            </div>
+                            <p className="text-[10px] text-gray-400 mt-2 ml-1 font-medium">
+                                Use Cloudflare Tunnel or Proxy. Leave empty for default.
+                            </p>
+                        </div>
                    </div>
 
                    <div className="pt-2">
