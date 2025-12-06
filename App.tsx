@@ -166,6 +166,7 @@ const App: React.FC = () => {
   const [userName, setUserName] = useState('');
   const [isConfigLoaded, setIsConfigLoaded] = useState(false); 
   const [customApiUrl, setCustomApiUrl] = useState('');
+  const [showServerConfig, setShowServerConfig] = useState(false); // New state for login screen settings
 
   const t = LABELS[lang];
 
@@ -646,8 +647,55 @@ const App: React.FC = () => {
 
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#f2f4f6] dark:bg-gray-900 transition-colors">
+        
+        {/* Server Config Modal */}
+        {showServerConfig && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white dark:bg-gray-800 rounded-[32px] w-full max-w-sm p-6 shadow-2xl animate-pop-in border border-gray-100 dark:border-gray-700">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-bold text-lg dark:text-white">Server Settings</h3>
+                        <button onClick={() => setShowServerConfig(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                            <X size={20} className="text-gray-500" />
+                        </button>
+                    </div>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Custom API URL</label>
+                            <input 
+                                type="text" 
+                                value={customApiUrl} 
+                                onChange={(e) => setCustomApiUrl(e.target.value)} 
+                                placeholder={API_BASE_URL} 
+                                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-medium dark:text-white text-sm" 
+                            />
+                            <p className="text-[10px] text-gray-400 mt-2 font-medium">
+                                Configure this if you are accessing via Cloudflare Tunnel or external proxy.
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => {
+                                setShowServerConfig(false);
+                                // Save handled by useEffect
+                            }}
+                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
+                        >
+                            Save Configuration
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
         <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[32px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] p-8 border border-white/50 dark:border-gray-700 relative">
           
+          {/* Server Config Entry */}
+          <button 
+             onClick={() => setShowServerConfig(true)}
+             className="absolute top-6 left-6 p-2 rounded-full text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
+          >
+             <Settings size={20} />
+          </button>
+
           {/* Subtle Cloud Login Entry */}
           <button 
              onClick={() => setShowCloudAuth(true)}
