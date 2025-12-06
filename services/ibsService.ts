@@ -124,7 +124,7 @@ export class IBSService {
           url: `${url}${endpoint}`,
           headers: this.getHeaders(),
           data: body,
-          connectTimeout: 5000, 
+          connectTimeout: 1500, // Adjusted to 1.5s based on internal network test
           readTimeout: 10000
         });
         
