@@ -18,9 +18,9 @@ export class IBSService {
   private userId: string | null = null;
   private room: string | null = null;
   private baseUrl: string = API_BASE_URL;
-  private isCustomUrl: boolean = false; // Track if user manually set URL
+  private isCustomUrl: boolean = false;
 
-  // New method to override Base URL
+  // Set custom base URL
   setBaseUrl(url: string) {
     if (!url) {
         this.baseUrl = API_BASE_URL;
@@ -31,7 +31,92 @@ export class IBSService {
     }
   }
 
-  // ... (isLoggedIn, logout, getHeaders, login methods stay same) ...
+  isLoggedIn(): boolean {
+    return !!this.userId;
+  }
+
+  logout() {
+    this.userId = null;
+    this.room = null;
+  }
+
+  private getHeaders(): any {
+    if (!this.userId) {
+      throw new Error("Not logged in");
+    }
+
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const nowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    const tokenPayload = JSON.stringify({
+      userID: this.userId,
+      tokenTime: nowStr
+    });
+
+    const token = encryptAndBase64(tokenPayload);
+
+    return {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) IBSJnuClient/1.0',
+      'Token': token,
+      'DateTime': nowStr
+    };
+  }
+
+  async login(room: string): Promise<boolean> {
+    const cleanRoom = room.toUpperCase();
+    const encryptedRoom = encryptAndBase64(cleanRoom);
+    
+    const payload = {
+      user: cleanRoom,
+      password: encryptedRoom
+    };
+
+    try {
+      const response = await CapacitorHttp.post({
+        url: `${this.baseUrl}Login`,
+        headers: { 'Content-Type': 'application/json' },
+        data: payload
+      });
+
+      if (response.status !== 200) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: JNUResponse<{ customerId: string }> = response.data;
+      
+      if (data.d.Success && data.d.ResultList && data.d.ResultList.length > 0) {
+        this.userId = data.d.ResultList[0].customerId;
+        this.room = cleanRoom;
+        return true;
+      } else {
+        throw new Error(data.d.Msg || 'Login failed');
+      }
+    } catch (error) {
+      // Simple failover for login if using default URL
+      if (!this.isCustomUrl && this.baseUrl === API_BASE_URL) {
+          console.warn("Login failed on primary, trying fallback...");
+          try {
+             const fbResponse = await CapacitorHttp.post({
+                url: `${FALLBACK_URL}Login`,
+                headers: { 'Content-Type': 'application/json' },
+                data: payload
+             });
+             if (fbResponse.status === 200 && fbResponse.data.d?.Success) {
+                 this.baseUrl = FALLBACK_URL;
+                 this.userId = fbResponse.data.d.ResultList[0].customerId;
+                 this.room = cleanRoom;
+                 return true;
+             }
+          } catch (fbError) {
+              console.error("Fallback login failed", fbError);
+          }
+      }
+      console.error("Login Error:", error);
+      throw error;
+    }
+  }
 
   private async post<T>(endpoint: string, body: any = {}): Promise<JNUResponse<T>> {
     const makeRequest = async (url: string) => {
@@ -39,7 +124,7 @@ export class IBSService {
           url: `${url}${endpoint}`,
           headers: this.getHeaders(),
           data: body,
-          connectTimeout: 5000, // 5s timeout for faster failover
+          connectTimeout: 5000, 
           readTimeout: 10000
         });
         
@@ -50,19 +135,15 @@ export class IBSService {
     try {
         return await makeRequest(this.baseUrl);
     } catch (e: any) {
-        // Only failover if:
-        // 1. Not using a custom user-defined URL
-        // 2. Current URL is the default primary URL
-        // 3. Error implies network issue (not auth error)
         if (!this.isCustomUrl && this.baseUrl === API_BASE_URL) {
             console.warn("Primary connection failed, attempting fallback to Tunnel...");
             try {
                 const res = await makeRequest(FALLBACK_URL);
-                this.baseUrl = FALLBACK_URL; // Switch to fallback for session
+                this.baseUrl = FALLBACK_URL; 
                 return res;
             } catch (fallbackError) {
                 console.error("Fallback also failed");
-                throw e; // Throw original error
+                throw e; 
             }
         }
         throw e;
@@ -111,8 +192,8 @@ export class IBSService {
     const payload = {
       startDate,
       endDate,
-      interval: 1, // Daily
-      energyType: 0 // All
+      interval: 1, 
+      energyType: 0 
     };
 
     const res = await this.post<MetricalDataResult>('GetCustomerMetricalData', payload);
