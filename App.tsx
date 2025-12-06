@@ -159,9 +159,8 @@ const App: React.FC = () => {
   const [showCloudAuth, setShowCloudAuth] = useState(false);
   const [showBinding, setShowBinding] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
-
-  // Config Loading State (Prevents overwriting storage during init)
-  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
+  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
+  const [userName, setUserName] = useState('');
 
   const t = LABELS[lang];
 
@@ -297,25 +296,33 @@ const App: React.FC = () => {
     }, 800);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setErrorMsg('');
-
-    if (loginRoom.toUpperCase() === 'DEMO') {
+  const handleLogin = async (e?: React.FormEvent, roomOverride?: string) => {
+    if (e) e.preventDefault();
+    const roomToUse = roomOverride || loginRoom;
+    
+    if (!roomToUse) return;
+    if (roomToUse.toUpperCase() === 'DEMO') {
       enterDemoMode();
       return;
     }
 
+    setIsLoading(true);
+    setErrorMsg('');
+
     try {
-      await ibsService.login(loginRoom);
+      await ibsService.login(roomToUse);
       setIsLoggedIn(true);
       setIsDemo(false);
+      // Ensure loginRoom state is consistent for other parts of app
+      if (roomOverride) setLoginRoom(roomOverride);
       await loadData();
     } catch (err: any) {
       setErrorMsg(t.loginFail + ": " + (err.message || 'Unknown'));
+      // If auto-login failed, stop the loading screen so user can retry
+      setIsAutoLoggingIn(false); 
     } finally {
       setIsLoading(false);
+      setIsAutoLoggingIn(false); // Stop welcome screen
     }
   };
 
@@ -563,6 +570,25 @@ const App: React.FC = () => {
   };
 
   // --- Render Login ---
+  if (isAutoLoggingIn) {
+      return (
+          <div className="fixed inset-0 bg-white dark:bg-gray-900 flex flex-col items-center justify-center z-[60] animate-fade-in">
+              <div className="text-center">
+                  <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600 dark:text-indigo-400 animate-pulse">
+                      <Home size={40} />
+                  </div>
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">欢迎回家</h2>
+                  <p className="text-gray-500 font-medium">{userName || 'User'}</p>
+                  <div className="mt-8 flex items-center justify-center gap-2 text-sm text-gray-400">
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce delay-100"></div>
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce delay-200"></div>
+                  </div>
+              </div>
+          </div>
+      );
+  }
+
   if (!isLoggedIn) {
     if (showBinding) {
         return (
@@ -570,11 +596,9 @@ const App: React.FC = () => {
                 userId={currentUserId}
                 onBindSuccess={(roomId) => {
                     setShowBinding(false);
-                    setLoginRoom(roomId);
-                    // Slight delay to allow state update
-                    setTimeout(() => {
-                        handleLogin({ preventDefault: () => {} } as any);
-                    }, 100);
+                    setUserName('New User'); // Or fetch name
+                    setIsAutoLoggingIn(true);
+                    handleLogin(undefined, roomId);
                 }}
             />
         );
@@ -592,12 +616,11 @@ const App: React.FC = () => {
                         .single();
                     
                     setShowCloudAuth(false);
+                    setUserName(user.email || 'User');
 
                     if (data && data.room_id) {
-                        setLoginRoom(data.room_id); 
-                        setTimeout(() => {
-                            handleLogin({ preventDefault: () => {} } as any);
-                        }, 100);
+                        setIsAutoLoggingIn(true);
+                        handleLogin(undefined, data.room_id);
                     } else {
                         // No binding, show binding screen
                         setCurrentUserId(user.id);
