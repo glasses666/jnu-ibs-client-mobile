@@ -24,8 +24,9 @@ export class WeatherService {
             const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
             
             if (data.code === 200) {
+                const temp = parseFloat(data.temperature);
                 return {
-                    temperature: parseFloat(data.temperature),
+                    temperature: isNaN(temp) ? 0 : temp, // Fallback to 0 if NaN
                     weather: data.weather2 && data.weather2 !== data.weather1 
                         ? `${data.weather1}转${data.weather2}` 
                         : data.weather1,

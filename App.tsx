@@ -1217,9 +1217,8 @@ const App: React.FC = () => {
           {activeTab === 'records' && (
               <div className="space-y-4 animate-fade-in pb-20">
                   <div className="bg-white dark:bg-gray-800 rounded-[32px] shadow-[0_2px_20px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800">
-                        <div className="p-6 border-b border-gray-50 dark:border-gray-700/50 flex justify-between items-center">
+                        <div className="p-6 border-b border-gray-50 dark:border-gray-700/50">
                             <h3 className="font-bold text-lg dark:text-white">{t.rechargeRecords}</h3>
-                            <span className="text-xs text-gray-400 font-mono">Count: {records.length}</span>
                         </div>
                         <div className="divide-y divide-gray-50 dark:divide-gray-800">
                             {records.length === 0 ? (

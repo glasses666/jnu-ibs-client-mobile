@@ -43,8 +43,13 @@
   }
   
   /* Remove focus outline for charts and buttons */
-  *:focus {
+  *:focus,
+  .recharts-surface:focus,
+  .recharts-layer:focus,
+  path:focus,
+  circle:focus {
     outline: none !important;
+    box-shadow: none !important;
   }
 }
 
