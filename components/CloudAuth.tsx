@@ -56,8 +56,8 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ onLoginSuccess, onAdminLog
   };
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-6 animate-fade-in z-50">
-      <div className="w-full max-w-sm">
+    <div className="fixed inset-0 bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-6 animate-fade-in z-50 overflow-y-auto">
+      <div className="w-full max-w-sm my-auto">
         
         {/* Header */}
         <div className="text-center mb-10">

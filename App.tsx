@@ -566,8 +566,8 @@ const App: React.FC = () => {
             <CloudAuth 
                 onLoginSuccess={(user) => {
                     setShowCloudAuth(false);
-                    // For now, assume T8201 and auto-login
-                    setLoginRoom('T8201'); 
+                    // For now, assume T50622 and auto-login
+                    setLoginRoom('T50622'); 
                     handleLogin({ preventDefault: () => {} } as any);
                 }}
                 onAdminLogin={() => {
