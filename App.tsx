@@ -3,15 +3,17 @@ import { ibsService } from './services/ibsService';
 import { aiService } from './services/geminiService';
 import { weatherService, WeatherData } from './services/weatherService';
 import { loadConfig, saveConfig, StorageKeys } from './services/storageService';
-import { 
-  OverviewData, 
-  PaymentRecord, 
-  MetricalDataResult, 
-  Language,
-  EnergyType,
-  AIProvider
-} from './types';
-import { LABELS, API_BASE_URL } from './constants';
+import { Capacitor } from '@capacitor/core';
+import {
+  JNUResponse,
+  OverviewData,
+  UserInfoResult,
+  SubsidyItem,
+  BillItem,
+  PaymentRecord,
+  MetricalDataResult,
+  EnergyType
+} from './types';import { LABELS, API_BASE_URL } from './constants';
 import DataCard from './components/DataCard';
 
 // Add local interface for AI Config storage
@@ -1348,7 +1350,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-6 left-4 right-4 bg-white/90 dark:bg-gray-950/85 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl z-50 p-2 flex justify-between items-center transition-all duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className={`lg:hidden fixed bottom-6 left-4 right-4 border border-gray-200 dark:border-white/10 rounded-2xl z-50 p-2 flex justify-between items-center transition-all duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] ${Capacitor.getPlatform() === 'ios' ? 'ios-liquid-glass' : 'bg-white/90 dark:bg-gray-950/85 backdrop-blur-xl'}`}>
         <MobileNavItem icon={<LayoutDashboard size={22} strokeWidth={activeTab === 'overview' ? 2.5 : 2}/>} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
         <MobileNavItem icon={<Activity size={22} strokeWidth={activeTab === 'trends' ? 2.5 : 2}/>} active={activeTab === 'trends'} onClick={() => setActiveTab('trends')} />
         <MobileNavItem icon={<History size={22} strokeWidth={activeTab === 'records' ? 2.5 : 2}/>} active={activeTab === 'records'} onClick={() => setActiveTab('records')} />
