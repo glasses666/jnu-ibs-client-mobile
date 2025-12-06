@@ -54,6 +54,7 @@ import {
   LayoutDashboard,
   BrainCircuit,
   Globe,
+  Home,
   ChevronRight,
   TrendingUp,
   ArrowUpRight,
@@ -161,6 +162,7 @@ const App: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState('');
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false); // New state
 
   const t = LABELS[lang];
 
@@ -235,14 +237,13 @@ const App: React.FC = () => {
 
   // Trigger Daily Brief
   useEffect(() => {
-      if (overview && enableAI && apiKey && !dailyBrief) {
-          // Ensure services are initialized with current state
+      if (isConfigLoaded && overview && enableAI && apiKey && !dailyBrief) {
           aiService.initialize(apiKey, aiBaseUrl, aiProvider, aiModel);
           aiService.generateDailyBrief(overview, lang, weather)
             .then(setDailyBrief)
             .catch(e => console.warn("Daily Brief Failed:", e));
       }
-  }, [overview, enableAI, apiKey, weather, lang, aiBaseUrl, aiProvider, aiModel, dailyBrief]);
+  }, [isConfigLoaded, overview, enableAI, apiKey, weather, lang, aiBaseUrl, aiProvider, aiModel, dailyBrief]);
 
 
   // --- Helpers ---
