@@ -43,14 +43,26 @@
     -webkit-backdrop-filter: blur(24px) saturate(180%); /* For wider compatibility */
   }
   
-  /* Prevent tap highlight color on mobile */
+  /* Remove focus outline and tap highlight for all interactive elements */
   *:focus,
-  .recharts-surface:focus,
-  .recharts-layer:focus,
+  a:focus,
+  button:focus,
+  input:focus,
+  textarea:focus,
+  select:focus,
+  [tabindex]:focus,
+  div[role="button"]:focus,
+  .recharts-wrapper *:focus,
+  .recharts-surface *:focus,
+  .recharts-layer *:focus,
+  svg *:focus,
+  g:focus,
   path:focus,
+  rect:focus,
   circle:focus {
     outline: none !important;
     box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important; /* Ensure no mobile tap highlight */
   }
 }
 
