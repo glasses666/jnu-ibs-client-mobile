@@ -1161,7 +1161,7 @@ const App: React.FC = () => {
                                     fontWeight={500}
                                 />
                                 <Tooltip 
-                                    cursor={{ stroke: 'rgba(100, 100, 100, 0.3)' }} /* More visible cursor */
+                                    cursor={{ stroke: isDark ? '#374151' : '#e5e7eb', strokeWidth: 2 }}
                                     contentStyle={{ 
                                         backgroundColor: isDark ? '#1f2937' : '#fff', 
                                         borderColor: isDark ? '#374151' : '#fff', 
@@ -1172,9 +1172,9 @@ const App: React.FC = () => {
                                     itemStyle={{ fontSize: '12px', fontWeight: 600, padding: '2px 0' }}
                                     labelStyle={{ color: isDark ? '#9ca3af' : '#6b7280', marginBottom: '8px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
                                 />
-                                <Line type="natural" dataKey="elec" name={t.electricity} stroke="#eab308" strokeWidth={3} dot={false} activeDot={false} animationDuration={1000} strokeDasharray={3} />
-                                <Line type="natural" dataKey="cold" name={t.coldWater} stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={false} animationDuration={1000} />
-                                <Line type="natural" dataKey="hot" name={t.hotWater} stroke="#f97316" strokeWidth={3} dot={false} activeDot={false} animationDuration={1000} />
+                                <Line type="natural" dataKey="elec" name={t.electricity} stroke="#eab308" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} animationDuration={1000} strokeDasharray={3} />
+                                <Line type="natural" dataKey="cold" name={t.coldWater} stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} animationDuration={1000} />
+                                <Line type="natural" dataKey="hot" name={t.hotWater} stroke="#f97316" strokeWidth={3} dot={false} activeDot={{ r: 6, strokeWidth: 0 }} animationDuration={1000} />
                                 <Legend content={<CustomLegend />} />
                             </LineChart>
                         </ResponsiveContainer>
