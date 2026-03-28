@@ -5,7 +5,7 @@ import { CloudAuth } from './CloudAuth.js';
 import { LoginScreen } from './LoginScreen.js';
 import { RoomBinding } from './RoomBinding.js';
 
-type AuthGateLabels = {
+export type AuthGateLabels = {
   login: string;
   title: string;
   roomPlaceholder: string;
@@ -13,7 +13,7 @@ type AuthGateLabels = {
   tryDemo: string;
 };
 
-type AuthGateProps = {
+export type AuthGateProps = {
   labels: AuthGateLabels;
   apiBaseUrl: string;
   isDark: boolean;

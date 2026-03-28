@@ -3,7 +3,7 @@ import { aiService } from './services/geminiService';
 import { Language } from './types';
 import { LABELS, API_BASE_URL } from './constants';
 
-import { AuthGate } from './components/AuthGate';
+import { AppAuthShell } from './components/AppAuthShell';
 import { AppShell } from './components/AppShell';
 import { isCloudAuthEnabled, supabase } from './services/supabaseClient';
 import {
@@ -159,7 +159,7 @@ const App: React.FC = () => {
 
   if (!isLoggedIn) {
     return (
-      <AuthGate
+      <AppAuthShell
         labels={t}
         apiBaseUrl={API_BASE_URL}
         isLoggedIn={isLoggedIn}
