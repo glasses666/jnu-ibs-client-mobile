@@ -29,7 +29,7 @@ import { CountUp } from './components/CountUp';
 import { MarkdownText } from './components/MarkdownText';
 import { CloudAuth } from './components/CloudAuth';
 import { RoomBinding } from './components/RoomBinding';
-import { supabase } from './services/supabaseClient';
+import { isCloudAuthEnabled, supabase } from './services/supabaseClient';
 import { 
   LineChart, 
   Line, 
@@ -489,7 +489,9 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
       // Sign out from Supabase if logged in via cloud
-      await supabase.auth.signOut();
+      if (supabase) {
+          await supabase.auth.signOut();
+      }
       
       ibsService.logout();
       setIsLoggedIn(false);
@@ -616,7 +618,7 @@ const App: React.FC = () => {
         );
     }
 
-    if (showCloudAuth) {
+    if (showCloudAuth && isCloudAuthEnabled && supabase) {
         return (
             <CloudAuth 
                 onLoginSuccess={async (user) => {
@@ -690,12 +692,14 @@ const App: React.FC = () => {
         <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[32px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] p-8 border border-white/50 dark:border-gray-700 relative">
           
           {/* Subtle Cloud Login Entry */}
-          <button 
-             onClick={() => setShowCloudAuth(true)}
-             className="absolute top-6 right-6 p-2 rounded-full text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
-          >
-             <Cloud size={20} />
-          </button>
+          {isCloudAuthEnabled && (
+            <button 
+               onClick={() => setShowCloudAuth(true)}
+               className="absolute top-6 right-6 p-2 rounded-full text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
+            >
+               <Cloud size={20} />
+            </button>
+          )}
 
           <div className="flex justify-between items-center mb-10">
             <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-sky-500/30">

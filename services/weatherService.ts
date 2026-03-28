@@ -1,5 +1,6 @@
 import { CapacitorHttp } from '@capacitor/core';
 import { WEATHER_API_ID, WEATHER_API_KEY } from '../constants';
+import { appConfig } from '../config/appConfig';
 
 export interface WeatherData {
   temperature: number;
@@ -13,6 +14,10 @@ export interface WeatherData {
 
 export class WeatherService {
   async getWeather(ip?: string): Promise<WeatherData | null> {
+    if (!appConfig.weatherEnabled) {
+      return null;
+    }
+
     try {
         // APIHZ requires GET parameters
         const query = `id=${WEATHER_API_ID}&key=${WEATHER_API_KEY}${ip ? `&ip=${ip}` : ''}`;

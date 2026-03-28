@@ -20,6 +20,12 @@ export const RoomBinding: React.FC<RoomBindingProps> = ({ userId, onBindSuccess 
     setIsLoading(true);
     setError('');
 
+    if (!supabase) {
+      setError('云同步未配置，暂不可用。');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Insert binding into Supabase
       const { error: dbError } = await supabase

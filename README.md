@@ -9,7 +9,7 @@
 [![CI Status](https://img.shields.io/github/actions/workflow/status/glasses666/jnu-ibs-client-mobile/android.yml?style=flat-square&logo=github)](https://github.com/glasses666/jnu-ibs-client-mobile/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android-green.svg?style=flat-square&logo=android)](https://www.android.com/)
-[![React](https://img.shields.io/badge/built%20with-React%20Native%20(Capacitor)-61DAFB.svg?style=flat-square&logo=react)](https://reactjs.org/)
+[![React](https://img.shields.io/badge/built%20with-React%20%2B%20Capacitor-61DAFB.svg?style=flat-square&logo=react)](https://reactjs.org/)
 
 </div>
 
@@ -67,28 +67,57 @@
 git clone https://github.com/glasses666/jnu-ibs-client-mobile.git
 cd jnu-ibs-client-mobile
 
-# 2. 安装依赖
+# 2. 使用 Node 20
+nvm use
+
+# 3. 安装依赖
 npm install
 
-# 3. 运行 Web 预览
+# 4. 运行 Web 预览
 npm run dev
 
-# 4. 构建 Android APK
+# 5. 构建 Web 资源
 npm run build
-npx cap sync
-npx cap open android
-# 在 Android Studio 中点击 "Run"
+
+# 6. 首次生成 Android 工程
+npm run android:add
+
+# 7. 后续同步 Android 资源
+npm run android:sync
 ```
+
+### 本地 Android 开发前提
+
+- Node `20.x`
+- JDK `17`
+- Android Studio
+
+> 仓库默认提交的是 Web 层代码；`android/` 目录会通过 Capacitor 在本地或 CI 中生成。
+
+## ⚙️ 环境变量 | Environment Variables
+
+项目支持通过 `.env.local` 覆盖默认配置，示例见 `.env.example`：
+
+```bash
+VITE_API_BASE_URL=
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_WEATHER_API_ID=
+VITE_WEATHER_API_KEY=
+```
+
+- 不配置 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` 时，云同步入口会自动降级。
+- 不配置天气 API 时，天气信息会自动关闭，不影响主查询流程。
 
 ## 🛠️ 技术栈 | Tech Stack
 
 - **前端框架**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
 - **构建工具**: [Vite](https://vitejs.dev/)
 - **移动端容器**: [Capacitor](https://capacitorjs.com/) (v5)
-- **UI 样式**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI 样式**: Tailwind CDN + custom CSS
 - **图标库**: [Lucide React](https://lucide.dev/)
 - **图表库**: [Recharts](https://recharts.org/)
-- **AI 支持**: Google Gemini API / OpenAI API
+- **AI 支持**: Google Gemini API / OpenAI-compatible API
 
 ## 🤝 贡献 | Contributing
 

@@ -29,6 +29,12 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ onLoginSuccess, onAdminLog
     setIsLoading(true);
     setError('');
 
+    if (!supabase) {
+      setError('云同步未配置，暂不可用。');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       if (isLogin) {
         const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });

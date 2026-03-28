@@ -2,13 +2,19 @@
   "name": "jnu-ibs-client-mobile",
   "private": true,
   "version": "1.0.0",
+  "engines": {
+    "node": "20.x"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/tests/**/*.test.js",
     "cap:sync": "cap sync",
-    "cap:build": "npm run build && cap sync"
+    "cap:build": "npm run build && cap sync",
+    "android:add": "npm run build && cap add android",
+    "android:sync": "npm run build && cap sync"
   },
   "dependencies": {
     "@capacitor/android": "^5.0.0",

@@ -1,15 +1,16 @@
 import { EnergyType } from './types';
+import { appConfig } from './config/appConfig';
 
 // ABSOLUTE URL for Native Android App (CapacitorHttp handles CORS)
-export const API_BASE_URL = 'https://pynhcx.jnu.edu.cn/IBSjnuweb/WebService/JNUService.asmx/';
+export const API_BASE_URL = appConfig.apiBaseUrl;
 
 // Crypto Constants
 export const AES_KEY_STR = 'CetSoftEEMSysWeb';
 export const AES_IV_HEX = '1934577290ABCDEF1264147890ACAE45';
 
 // Supabase Configuration
-export const SUPABASE_URL = 'https://buofqqtpujjtfiemttoq.supabase.co';
-export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1b2ZxcXRwdWpqdGZpZW10dG9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5NDkwMzIsImV4cCI6MjA4MDUyNTAzMn0.03yzbJjii7OJt3nsbxwb_k4qJCFqLdGlavou2ArIufI';
+export const SUPABASE_URL = appConfig.supabaseUrl;
+export const SUPABASE_ANON_KEY = appConfig.supabaseAnonKey;
 
 // Fallback Rates (JNU Panyu)
 export const RATES: Record<number, number> = {
@@ -19,8 +20,8 @@ export const RATES: Record<number, number> = {
 };
 
 // Weather API Constants
-export const WEATHER_API_ID = '10010578';
-export const WEATHER_API_KEY = 'feda2d2bcc4e153b1b063a50760f82a4';
+export const WEATHER_API_ID = appConfig.weatherApiId;
+export const WEATHER_API_KEY = appConfig.weatherApiKey;
 
 export const LABELS = {
   zh: {
