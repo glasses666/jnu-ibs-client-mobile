@@ -1,5 +1,5 @@
 import React from 'react';
-import { CountUp } from './CountUp';
+import { CountUp } from './CountUp.js';
 
 interface DataCardProps {
   title: string;

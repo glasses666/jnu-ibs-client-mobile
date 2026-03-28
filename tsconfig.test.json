@@ -8,6 +8,7 @@
   },
   "include": [
     "tests/**/*.ts",
+    "tests/**/*.tsx",
     "config/**/*.ts"
   ]
 }
