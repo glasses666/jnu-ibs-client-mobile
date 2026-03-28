@@ -12,6 +12,29 @@ type RechargePlanPromptArgs = {
   inputs: RechargePlanInputs;
 };
 
+type RechargeAiConfig = {
+  apiKey: string;
+  aiBaseUrl: string;
+  aiProvider: 'google' | 'openai';
+  aiModel: string;
+};
+
+type RechargeAiClient = {
+  initialize: (
+    apiKey: string,
+    aiBaseUrl: string,
+    aiProvider: 'google' | 'openai',
+    aiModel: string
+  ) => void;
+  ask: (system: string, user: string) => Promise<string>;
+};
+
+type GenerateRechargePlanArgs = RechargePlanInputsArgs & {
+  aiClient: RechargeAiClient;
+  ai: RechargeAiConfig;
+  lang: Language;
+};
+
 export type RechargePlanInputs = {
   dailyCosts: {
     elec: number;
@@ -111,4 +134,29 @@ export const createRechargePrompt = ({ lang, inputs }: RechargePlanPromptArgs) =
        Output Markdown: Total, Per Person, Analysis, Message.`;
 
   return { systemPrompt, userPrompt };
+};
+
+export const generateRechargePlan = async ({
+  aiClient,
+  ai,
+  lang,
+  overview,
+  trends,
+  daysToCover,
+  roommates,
+}: GenerateRechargePlanArgs) => {
+  aiClient.initialize(ai.apiKey, ai.aiBaseUrl, ai.aiProvider, ai.aiModel);
+
+  const planInputs = calculateRechargePlanInputs({
+    overview,
+    trends,
+    daysToCover,
+    roommates,
+  });
+  const { systemPrompt, userPrompt } = createRechargePrompt({
+    lang,
+    inputs: planInputs,
+  });
+
+  return aiClient.ask(systemPrompt, userPrompt);
 };

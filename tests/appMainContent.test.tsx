@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { AppMainContent } from '../components/AppMainContent.js';
 
 const labels = {
-  overview: 'Overview',
+  dashboard: 'Dashboard',
   trends: 'Trends',
   records: 'Records',
   settings: 'Settings',
@@ -109,7 +109,7 @@ const baseProps = {
 test('AppMainContent renders the overview tab with the desktop header', () => {
   const html = renderToStaticMarkup(<AppMainContent {...baseProps} />);
 
-  assert.match(html, /Overview/);
+  assert.match(html, /Dashboard/);
   assert.match(html, /Remember to save energy/);
   assert.match(html, /Refresh/);
 });

@@ -5,6 +5,7 @@ import { EnergyType, Language } from '../types.js';
 import {
   calculateRechargePlanInputs,
   createRechargePrompt,
+  generateRechargePlan,
 } from '../utils/rechargePlanner.js';
 
 const overview = {
@@ -92,4 +93,60 @@ test('createRechargePrompt renders the English billing brief', () => {
   assert.match(prompt.userPrompt, /Main Balance: ¥124\.50/);
   assert.match(prompt.userPrompt, /1\. Elec: Daily ¥2\.59, Subsidy ¥10\.03/);
   assert.match(prompt.userPrompt, /Output Markdown: Total, Per Person, Analysis, Message\./);
+});
+
+test('generateRechargePlan initializes the AI client and returns its markdown response', async () => {
+  const calls: {
+    initialized?: {
+      apiKey: string;
+      aiBaseUrl: string;
+      aiProvider: 'google' | 'openai';
+      aiModel: string;
+    };
+    prompt?: {
+      system: string;
+      user: string;
+    };
+  } = {};
+
+  const response = await generateRechargePlan({
+    aiClient: {
+      initialize(apiKey, aiBaseUrl, aiProvider, aiModel) {
+        calls.initialized = { apiKey, aiBaseUrl, aiProvider, aiModel };
+      },
+      ask(system, user) {
+        calls.prompt = { system, user };
+        return Promise.resolve('**需充值总额**: ¥120');
+      },
+    },
+    ai: {
+      apiKey: 'sk-demo',
+      aiBaseUrl: 'https://proxy.example.com/v1',
+      aiProvider: 'openai',
+      aiModel: 'qwen-plus',
+    },
+    lang: Language.ZH,
+    overview,
+    trends: [
+      {
+        energyType: EnergyType.ELEC,
+        datas: [3, 4, 5].map((dataValue, index) => ({
+          recordTime: new Date(2026, 2, index + 1).getTime(),
+          dataValue,
+        })),
+      },
+    ],
+    daysToCover: 21,
+    roommates: 4,
+  });
+
+  assert.equal(response, '**需充值总额**: ¥120');
+  assert.deepEqual(calls.initialized, {
+    apiKey: 'sk-demo',
+    aiBaseUrl: 'https://proxy.example.com/v1',
+    aiProvider: 'openai',
+    aiModel: 'qwen-plus',
+  });
+  assert.equal(calls.prompt?.system, 'You are a precise billing assistant.');
+  assert.match(calls.prompt?.user || '', /目标天数: 21天/);
 });

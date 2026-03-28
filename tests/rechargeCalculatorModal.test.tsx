@@ -24,7 +24,7 @@ test('RechargeCalculatorModal renders nothing when closed', () => {
       formatMoney={() => '¥0.00'}
       roommates={4}
       daysToCover={30}
-      enableAI={false}
+      canCalculate={false}
       isCalcLoading={false}
       calcResult=""
       onClose={() => {}}
@@ -37,7 +37,7 @@ test('RechargeCalculatorModal renders nothing when closed', () => {
   assert.equal(html, '');
 });
 
-test('RechargeCalculatorModal shows the AI configuration hint when AI is disabled', () => {
+test('RechargeCalculatorModal shows the AI configuration hint when recharge planning is unavailable', () => {
   const html = renderToStaticMarkup(
     <RechargeCalculatorModal
       isOpen={true}
@@ -46,7 +46,7 @@ test('RechargeCalculatorModal shows the AI configuration hint when AI is disable
       formatMoney={(value) => `¥${value.toFixed(2)}`}
       roommates={4}
       daysToCover={30}
-      enableAI={false}
+      canCalculate={false}
       isCalcLoading={false}
       calcResult=""
       onClose={() => {}}
@@ -58,6 +58,7 @@ test('RechargeCalculatorModal shows the AI configuration hint when AI is disable
 
   assert.match(html, /请在设置中配置 AI/);
   assert.match(html, /账户余额/);
+  assert.match(html, /disabled/);
 });
 
 test('RechargeCalculatorModal renders the markdown result container when a calculation exists', () => {
@@ -69,7 +70,7 @@ test('RechargeCalculatorModal renders the markdown result container when a calcu
       formatMoney={(value) => `¥${value.toFixed(2)}`}
       roommates={4}
       daysToCover={30}
-      enableAI={true}
+      canCalculate={true}
       isCalcLoading={false}
       calcResult="**需充值总额**: ¥120"
       onClose={() => {}}

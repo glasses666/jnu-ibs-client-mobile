@@ -20,6 +20,7 @@ type SessionLabels = {
 
 type SessionAiConfig = {
   isConfigLoaded: boolean;
+  isConfigured: boolean;
   enableAI: boolean;
   apiKey: string;
   aiBaseUrl: string;
@@ -141,7 +142,7 @@ export const useAppSession = ({ labels, lang, ai }: UseAppSessionArgs) => {
   };
 
   const handleTrendAnalysis = async () => {
-    if (!ai.enableAI || !ai.apiKey) {
+    if (!ai.isConfigured) {
       patchSession({ activeTab: 'settings' });
       return;
     }
@@ -224,7 +225,7 @@ export const useAppSession = ({ labels, lang, ai }: UseAppSessionArgs) => {
   }, [session.chartDate]);
 
   useEffect(() => {
-    if (ai.isConfigLoaded && session.overview && ai.enableAI && ai.apiKey && !session.dailyBrief) {
+    if (ai.isConfigLoaded && session.overview && ai.isConfigured && !session.dailyBrief) {
       aiService.initialize(ai.apiKey, ai.aiBaseUrl, ai.aiProvider, ai.aiModel);
       aiService
         .generateDailyBrief(session.overview, lang, session.weather)
@@ -236,8 +237,8 @@ export const useAppSession = ({ labels, lang, ai }: UseAppSessionArgs) => {
     ai.aiModel,
     ai.aiProvider,
     ai.apiKey,
-    ai.enableAI,
     ai.isConfigLoaded,
+    ai.isConfigured,
     lang,
     session.dailyBrief,
     session.overview,

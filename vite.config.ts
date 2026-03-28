@@ -3,12 +3,51 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+const manualVendorChunk = (id: string) => {
+  if (!id.includes('node_modules')) {
+    return undefined;
+  }
+
+  if (id.includes('@google/genai')) {
+    return 'ai-sdk';
+  }
+
+  if (id.includes('recharts')) {
+    return 'charts';
+  }
+
+  if (id.includes('@supabase/supabase-js')) {
+    return 'supabase';
+  }
+
+  if (id.includes('@capacitor/')) {
+    return 'capacitor';
+  }
+
+  if (id.includes('lucide-react')) {
+    return 'icons';
+  }
+
+  if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/')) {
+    return 'react-vendor';
+  }
+
+  return 'vendor';
+}
+
 export default defineConfig({
   base: './', // CRITICAL: Use relative paths for assets in Capacitor
   plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "."),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: manualVendorChunk,
+      },
     },
   },
   server: {

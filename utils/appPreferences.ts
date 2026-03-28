@@ -27,6 +27,13 @@ type PersistAiConfigArgs = {
   aiModel: string;
 };
 
+type AiFeatureConfigArgs = {
+  enableAI: boolean;
+  apiKey: string;
+  aiBaseUrl: string;
+  aiProvider: AIProvider;
+};
+
 const defaultPersistedAiConfig: PersistedAiConfig = {
   enableAI: false,
   apiKey: '',
@@ -78,6 +85,23 @@ export const createPersistedAiConfig = ({
   provider: aiProvider,
   model: aiModel,
 });
+
+export const isAiFeatureConfigured = ({
+  enableAI,
+  apiKey,
+  aiBaseUrl,
+  aiProvider,
+}: AiFeatureConfigArgs) => {
+  if (!enableAI || !apiKey.trim()) {
+    return false;
+  }
+
+  if (aiProvider === 'openai' && !aiBaseUrl.trim()) {
+    return false;
+  }
+
+  return true;
+};
 
 export const loadPersistedPreferences = async () => {
   const [theme, lang, aiConfig, currency, customApiUrl] = await Promise.all([

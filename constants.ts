@@ -187,3 +187,5 @@ export const LABELS = {
     statusLabel: 'Status'
   }
 };
+
+export type AppLabels = typeof LABELS.en;

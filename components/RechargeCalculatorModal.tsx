@@ -2,7 +2,7 @@ import { Bot, Calculator, Copy, X } from 'lucide-react';
 
 import { MarkdownText } from './MarkdownText.js';
 
-type RechargeCalculatorLabels = {
+export type RechargeCalculatorLabels = {
   calcTitle: string;
   calcDesc: string;
   balance: string;
@@ -12,14 +12,14 @@ type RechargeCalculatorLabels = {
   configureAi: string;
 };
 
-type RechargeCalculatorModalProps = {
+export type RechargeCalculatorModalProps = {
   isOpen: boolean;
   labels: RechargeCalculatorLabels;
   balance: number;
   formatMoney: (value: number) => string;
   roommates: number;
   daysToCover: number;
-  enableAI: boolean;
+  canCalculate: boolean;
   isCalcLoading: boolean;
   calcResult: string;
   onClose: () => void;
@@ -35,7 +35,7 @@ export const RechargeCalculatorModal = ({
   formatMoney,
   roommates,
   daysToCover,
-  enableAI,
+  canCalculate,
   isCalcLoading,
   calcResult,
   onClose,
@@ -109,7 +109,7 @@ export const RechargeCalculatorModal = ({
           <div className="pt-2">
             <button
               onClick={onCalculate}
-              disabled={isCalcLoading || !enableAI}
+              disabled={isCalcLoading || !canCalculate}
               className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/20 disabled:opacity-50 flex justify-center items-center gap-2"
             >
               {isCalcLoading ? (
@@ -117,7 +117,7 @@ export const RechargeCalculatorModal = ({
               ) : (
                 <Bot size={18} />
               )}
-              {enableAI ? labels.generatePlan : labels.configureAi}
+              {canCalculate ? labels.generatePlan : labels.configureAi}
             </button>
           </div>
 

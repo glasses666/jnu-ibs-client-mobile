@@ -1,9 +1,9 @@
-
-import { GoogleGenAI } from "@google/genai";
+import type { WeatherData } from './weatherService.js';
 import { OverviewData, MetricalDataResult, Language, AIProvider } from "../types.js";
 
 export class AIService {
-  private googleClient: GoogleGenAI | null = null;
+  private googleClient: any | null = null;
+  private googleClientPromise: Promise<any> | null = null;
   private apiKey: string = '';
   private baseUrl: string = '';
   private provider: AIProvider = 'google';
@@ -17,17 +17,11 @@ export class AIService {
     this.baseUrl = baseUrl?.trim().replace(/\/$/, '') || ''; // Remove trailing slash
     this.provider = provider;
     this.modelName = modelName || (provider === 'google' ? 'gemini-2.5-flash' : 'gpt-3.5-turbo');
-
-    if (this.provider === 'google') {
-        const options: any = { apiKey: this.apiKey };
-        if (this.baseUrl) {
-            options.baseUrl = this.baseUrl;
-        }
-        this.googleClient = new GoogleGenAI(options);
-    }
+    this.googleClient = null;
+    this.googleClientPromise = null;
   }
 
-  async generateDailyBrief(overview: OverviewData, lang: Language, weather?: any): Promise<string> {
+  async generateDailyBrief(overview: OverviewData, lang: Language, weather?: WeatherData | null): Promise<string> {
       if (!this.apiKey) return "";
       
       const hour = new Date().getHours();
@@ -104,9 +98,9 @@ export class AIService {
   }
 
   private async callGoogleGemini(fullPrompt: string): Promise<string> {
-    if (!this.googleClient) throw new Error("Google Client not initialized");
+    const googleClient = await this.ensureGoogleClient();
     try {
-        const response = await this.googleClient.models.generateContent({
+        const response = await googleClient.models.generateContent({
             model: this.modelName,
             contents: fullPrompt,
             config: { temperature: 0.7 }
@@ -167,6 +161,34 @@ export class AIService {
       if (msg.includes("404")) msg = "Invalid URL or Model Name.";
       if (msg.includes("Failed to fetch")) msg = "Network Error. Check your Base URL.";
       return new Error(msg);
+  }
+
+  private async ensureGoogleClient() {
+    if (this.provider !== 'google') {
+      throw new Error("Google provider is not enabled.");
+    }
+
+    if (this.googleClient) {
+      return this.googleClient;
+    }
+
+    if (!this.googleClientPromise) {
+      this.googleClientPromise = this.createGoogleClient();
+    }
+
+    this.googleClient = await this.googleClientPromise;
+    return this.googleClient;
+  }
+
+  private async createGoogleClient() {
+    const { GoogleGenAI } = await import('@google/genai');
+    const options: any = { apiKey: this.apiKey };
+
+    if (this.baseUrl) {
+      options.baseUrl = this.baseUrl;
+    }
+
+    return new GoogleGenAI(options);
   }
 }
 

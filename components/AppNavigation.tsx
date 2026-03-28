@@ -16,7 +16,7 @@ import type { ActiveTab } from '../types';
 
 export type { ActiveTab } from '../types';
 
-type NavigationLabels = {
+export type NavigationLabels = {
   dashboard: string;
   trends: string;
   records: string;

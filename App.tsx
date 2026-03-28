@@ -4,13 +4,7 @@ import { Language } from './types';
 import { LABELS, API_BASE_URL } from './constants';
 
 import { AuthGate } from './components/AuthGate';
-import { AppMainContent } from './components/AppMainContent';
-import { RechargeCalculatorModal } from './components/RechargeCalculatorModal';
-import {
-  DesktopSidebar,
-  MobileBottomNav,
-  MobileHeader,
-} from './components/AppNavigation';
+import { AppShell } from './components/AppShell';
 import { isCloudAuthEnabled, supabase } from './services/supabaseClient';
 import {
   formatMoney as formatCurrency,
@@ -19,11 +13,11 @@ import {
   prepareTrendChartData,
 } from './utils/dashboardPresentation';
 import {
-  calculateRechargePlanInputs,
-  createRechargePrompt,
+  generateRechargePlan,
 } from './utils/rechargePlanner';
 import { useAppSession } from './hooks/useAppSession';
 import { useAppPreferences } from './hooks/useAppPreferences';
+import { isAiFeatureConfigured } from './utils/appPreferences';
 
 const App: React.FC = () => {
   const {
@@ -62,6 +56,12 @@ const App: React.FC = () => {
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   
   const t = LABELS[lang];
+  const canUseAiFeatures = isAiFeatureConfigured({
+    enableAI,
+    apiKey,
+    aiBaseUrl,
+    aiProvider,
+  });
 
   const {
     session: {
@@ -104,6 +104,7 @@ const App: React.FC = () => {
     lang,
     ai: {
       isConfigLoaded,
+      isConfigured: canUseAiFeatures,
       enableAI,
       apiKey,
       aiBaseUrl,
@@ -121,23 +122,25 @@ const App: React.FC = () => {
 
   // --- Handlers ---
   const handleCalculateRecharge = async () => {
-      if (!overview) return;
+      if (!overview || !canUseAiFeatures) return;
       setIsCalcLoading(true);
       setCalcResult('');
       
       try {
-        aiService.initialize(apiKey, aiBaseUrl, aiProvider, aiModel);
-        const planInputs = calculateRechargePlanInputs({
+        const res = await generateRechargePlan({
+          aiClient: aiService,
+          ai: {
+            apiKey,
+            aiBaseUrl,
+            aiProvider,
+            aiModel,
+          },
+          lang,
           overview,
           trends,
           daysToCover,
           roommates,
         });
-        const { systemPrompt, userPrompt } = createRechargePrompt({
-          lang,
-          inputs: planInputs,
-        });
-        const res = await aiService.ask(systemPrompt, userPrompt);
         setCalcResult(res);
 
       } catch (e: any) {
@@ -190,92 +193,63 @@ const App: React.FC = () => {
 
   // --- Main App Layout ---
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#f8f9fa] dark:bg-black text-gray-900 dark:text-gray-100 transition-colors overflow-hidden font-sans selection:bg-primary/20">
-      
-      <RechargeCalculatorModal
-        isOpen={showCalculator}
-        labels={t}
-        balance={overview?.balance || 0}
-        formatMoney={formatMoney}
-        roommates={roommates}
-        daysToCover={daysToCover}
-        enableAI={enableAI}
-        isCalcLoading={isCalcLoading}
-        calcResult={calcResult}
-        onClose={() => setShowCalculator(false)}
-        onRoommatesChange={setRoommates}
-        onDaysToCoverChange={setDaysToCover}
-        onCalculate={handleCalculateRecharge}
-      />
-
-      <DesktopSidebar
-        labels={t}
-        room={overview?.room}
-        activeTab={activeTab}
-        onSetActiveTab={setActiveTab}
-        onLogout={handleLogout}
-      />
-
-      <MobileHeader
-        room={overview?.room}
-        weather={weather}
-        isLoading={isLoading}
-        onRefresh={handleRefresh}
-      />
-
-      {/* Main Content */}
-      <main className="flex-1 lg:pl-80 pt-14 lg:pt-0 pb-28 lg:pb-8 overflow-y-auto no-scrollbar">
-        <div className="p-5 md:p-10 max-w-6xl mx-auto min-h-full">
-          <AppMainContent
-            labels={t}
-            activeTab={activeTab}
-            weather={weather}
-            isLoading={isLoading}
-            onRefresh={handleRefresh}
-            overview={overview}
-            dailyBrief={dailyBrief}
-            displayUnit={displayUnit}
-            totalSubsidyMoney={totalSubsidyMoney}
-            balanceStatus={balanceStatus}
-            formatMoney={formatMoney}
-            onSetDisplayUnit={setDisplayUnit}
-            onOpenCalculator={() => setShowCalculator(true)}
-            chartDate={chartDate}
-            chartData={chartData}
-            isDark={isDark}
-            enableAI={enableAI}
-            trendAnalysis={trendAnalysis}
-            isTrendAiLoading={isTrendAiLoading}
-            onChangeMonth={changeMonth}
-            onGenerateAnalysis={handleTrendAnalysis}
-            onResetAnalysis={() => setTrendAnalysis('')}
-            records={records}
-            lang={lang}
-            currency={currency}
-            aiProvider={aiProvider}
-            apiKey={apiKey}
-            aiModel={aiModel}
-            aiBaseUrl={aiBaseUrl}
-            showAdvancedSettings={showAdvancedSettings}
-            customApiUrl={customApiUrl}
-            onSetLang={(value) => setLang(value === 'zh' ? Language.ZH : Language.EN)}
-            onToggleDarkMode={() => setIsDark(!isDark)}
-            onSetCurrency={setCurrency}
-            onToggleAI={() => setEnableAI(!enableAI)}
-            onSetAiProvider={setAiProvider}
-            onSetApiKey={setApiKey}
-            onSetAiModel={setAiModel}
-            onSetAiBaseUrl={setAiBaseUrl}
-            onToggleAdvancedSettings={() => setShowAdvancedSettings(!showAdvancedSettings)}
-            onSetCustomApiUrl={setCustomApiUrl}
-            onLogout={handleLogout}
-          />
-
-        </div>
-      </main>
-
-      <MobileBottomNav activeTab={activeTab} onSetActiveTab={setActiveTab} />
-    </div>
+    <AppShell
+      labels={t}
+      room={overview?.room}
+      weather={weather}
+      isLoading={isLoading}
+      activeTab={activeTab}
+      onSetActiveTab={setActiveTab}
+      onRefresh={handleRefresh}
+      onLogout={handleLogout}
+      isCalculatorOpen={showCalculator}
+      balance={overview?.balance || 0}
+      formatMoney={formatMoney}
+      roommates={roommates}
+      daysToCover={daysToCover}
+      canCalculateRecharge={canUseAiFeatures}
+      isCalcLoading={isCalcLoading}
+      calcResult={calcResult}
+      onCloseCalculator={() => setShowCalculator(false)}
+      onRoommatesChange={setRoommates}
+      onDaysToCoverChange={setDaysToCover}
+      onCalculateRecharge={handleCalculateRecharge}
+      overview={overview}
+      dailyBrief={dailyBrief}
+      displayUnit={displayUnit}
+      totalSubsidyMoney={totalSubsidyMoney}
+      balanceStatus={balanceStatus}
+      onSetDisplayUnit={setDisplayUnit}
+      onOpenCalculator={() => setShowCalculator(true)}
+      chartDate={chartDate}
+      chartData={chartData}
+      isDark={isDark}
+      enableAI={enableAI}
+      trendAnalysis={trendAnalysis}
+      isTrendAiLoading={isTrendAiLoading}
+      onChangeMonth={changeMonth}
+      onGenerateAnalysis={handleTrendAnalysis}
+      onResetAnalysis={() => setTrendAnalysis('')}
+      records={records}
+      lang={lang}
+      currency={currency}
+      aiProvider={aiProvider}
+      apiKey={apiKey}
+      aiModel={aiModel}
+      aiBaseUrl={aiBaseUrl}
+      showAdvancedSettings={showAdvancedSettings}
+      customApiUrl={customApiUrl}
+      onSetLang={(value) => setLang(value === 'zh' ? Language.ZH : Language.EN)}
+      onToggleDarkMode={() => setIsDark(!isDark)}
+      onSetCurrency={setCurrency}
+      onToggleAI={() => setEnableAI(!enableAI)}
+      onSetAiProvider={setAiProvider}
+      onSetApiKey={setApiKey}
+      onSetAiModel={setAiModel}
+      onSetAiBaseUrl={setAiBaseUrl}
+      onToggleAdvancedSettings={() => setShowAdvancedSettings(!showAdvancedSettings)}
+      onSetCustomApiUrl={setCustomApiUrl}
+    />
   );
 };
 

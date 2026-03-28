@@ -1,29 +1,80 @@
+import type { WeatherData } from '../services/weatherService.js';
+import type { ActiveTab, AIProvider, OverviewData, PaymentRecord } from '../types.js';
+import type { TrendChartDatum } from '../utils/dashboardPresentation.js';
 import { DesktopPageHeader } from './DesktopPageHeader.js';
 import { OverviewContent } from './OverviewContent.js';
 import { RecordsPanel } from './RecordsPanel.js';
 import { SettingsPanel } from './SettingsPanel.js';
 import { TrendsPanel } from './TrendsPanel.js';
 
-type AppMainContentProps = {
-  labels: any;
-  activeTab: 'overview' | 'trends' | 'records' | 'settings';
-  weather: any;
+export type BalanceStatus = {
+  textClass: string;
+  statusText: string;
+  dotClass: string;
+};
+
+export type AppMainContentLabels = {
+  dashboard: string;
+  trends: string;
+  records: string;
+  settings: string;
+  refresh: string;
+  balance: string;
+  totalCost: string;
+  subsidyLabel: string;
+  rechargeRecords: string;
+  showMoney: string;
+  showUnit: string;
+  electricity: string;
+  coldWater: string;
+  hotWater: string;
+  unitKwh: string;
+  unitM3: string;
+  estimatedToday: string;
+  trendAnalysisTitle: string;
+  generateAnalysis: string;
+  analysisNotEnabled: string;
+  analysisPlaceholder: string;
+  regenerate: string;
+  general: string;
+  language: string;
+  darkMode: string;
+  lightMode: string;
+  currencyLabel: string;
+  aiConfig: string;
+  betaTag: string;
+  aiProvider: string;
+  apiKeyPlaceholder: string;
+  modelName: string;
+  modelPlaceholder: string;
+  apiUrlPlaceholder: string;
+  baseUrlHint: string;
+  logout: string;
+};
+
+const TAB_TITLE_KEYS = {
+  overview: 'dashboard',
+  trends: 'trends',
+  records: 'records',
+  settings: 'settings',
+} as const satisfies Record<ActiveTab, keyof Pick<AppMainContentLabels, 'dashboard' | 'trends' | 'records' | 'settings'>>;
+
+export type AppMainContentProps = {
+  labels: AppMainContentLabels;
+  activeTab: ActiveTab;
+  weather: WeatherData | null;
   isLoading: boolean;
   onRefresh: () => void;
-  overview: any;
+  overview: OverviewData | null;
   dailyBrief: string;
   displayUnit: 'money' | 'unit';
   totalSubsidyMoney: number;
-  balanceStatus: {
-    textClass: string;
-    statusText: string;
-    dotClass: string;
-  };
+  balanceStatus: BalanceStatus;
   formatMoney: (value: number) => string;
   onSetDisplayUnit: (value: 'money' | 'unit') => void;
   onOpenCalculator: () => void;
   chartDate: Date;
-  chartData: any[];
+  chartData: TrendChartDatum[];
   isDark: boolean;
   enableAI: boolean;
   trendAnalysis: string;
@@ -31,10 +82,10 @@ type AppMainContentProps = {
   onChangeMonth: (offset: number) => void;
   onGenerateAnalysis: () => void;
   onResetAnalysis: () => void;
-  records: any[];
+  records: PaymentRecord[];
   lang: 'zh' | 'en';
   currency: 'CNY' | 'USD';
-  aiProvider: 'google' | 'openai';
+  aiProvider: AIProvider;
   apiKey: string;
   aiModel: string;
   aiBaseUrl: string;
@@ -99,7 +150,7 @@ export const AppMainContent = ({
 }: AppMainContentProps) => (
   <>
     <DesktopPageHeader
-      title={labels[activeTab]}
+      title={labels[TAB_TITLE_KEYS[activeTab]]}
       refreshLabel={labels.refresh}
       isLoading={isLoading}
       weather={weather}

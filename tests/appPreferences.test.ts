@@ -6,6 +6,7 @@ import {
   createPersistedAiConfig,
   getCompatibleModelForProvider,
   hydratePersistedPreferences,
+  isAiFeatureConfigured,
 } from '../utils/appPreferences.js';
 
 test('getCompatibleModelForProvider keeps the existing google fallback mapping', () => {
@@ -58,5 +59,56 @@ test('createPersistedAiConfig returns the storage payload shape used by App', ()
       provider: 'openai',
       model: 'qwen-plus',
     }
+  );
+});
+
+test('isAiFeatureConfigured requires an API key before enabling AI actions', () => {
+  assert.equal(
+    isAiFeatureConfigured({
+      enableAI: true,
+      apiKey: '',
+      aiProvider: 'google',
+      aiBaseUrl: '',
+    }),
+    false
+  );
+  assert.equal(
+    isAiFeatureConfigured({
+      enableAI: false,
+      apiKey: 'sk-demo',
+      aiProvider: 'google',
+      aiBaseUrl: '',
+    }),
+    false
+  );
+  assert.equal(
+    isAiFeatureConfigured({
+      enableAI: true,
+      apiKey: 'sk-demo',
+      aiProvider: 'google',
+      aiBaseUrl: '',
+    }),
+    true
+  );
+});
+
+test('isAiFeatureConfigured requires a base url for openai-compatible providers', () => {
+  assert.equal(
+    isAiFeatureConfigured({
+      enableAI: true,
+      apiKey: 'sk-demo',
+      aiProvider: 'openai',
+      aiBaseUrl: '',
+    }),
+    false
+  );
+  assert.equal(
+    isAiFeatureConfigured({
+      enableAI: true,
+      apiKey: 'sk-demo',
+      aiProvider: 'openai',
+      aiBaseUrl: 'https://proxy.example.com/v1',
+    }),
+    true
   );
 });
