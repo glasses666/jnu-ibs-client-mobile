@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { aiService } from './services/geminiService';
+import React from 'react';
 import { Language } from './types';
 import { LABELS, API_BASE_URL } from './constants';
 
@@ -12,11 +11,10 @@ import {
   getTotalSubsidyMoney,
   prepareTrendChartData,
 } from './utils/dashboardPresentation';
-import {
-  generateRechargePlan,
-} from './utils/rechargePlanner';
 import { useAppSession } from './hooks/useAppSession';
 import { useAppPreferences } from './hooks/useAppPreferences';
+import { useAppUiState } from './hooks/useAppUiState';
+import { useRechargeCalculator } from './hooks/useRechargeCalculator';
 import { isAiFeatureConfigured } from './utils/appPreferences';
 
 const App: React.FC = () => {
@@ -42,20 +40,16 @@ const App: React.FC = () => {
     isConfigLoaded,
   } = useAppPreferences();
 
-  // UI Toggles
-  const [displayUnit, setDisplayUnit] = useState<'money' | 'unit'>('money'); 
-  const [showCalculator, setShowCalculator] = useState(false); 
-
-  // AI & Calculator State
-  const [roommates, setRoommates] = useState(4);
-  const [daysToCover, setDaysToCover] = useState(30); 
-  const [calcResult, setCalcResult] = useState('');
-  const [isCalcLoading, setIsCalcLoading] = useState(false);
-  
-  const [showServerConfig, setShowServerConfig] = useState(false); 
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-  
   const t = LABELS[lang];
+  const {
+    displayUnit,
+    setDisplayUnit,
+    showServerConfig,
+    openServerConfig,
+    closeServerConfig,
+    showAdvancedSettings,
+    toggleAdvancedSettings,
+  } = useAppUiState();
   const canUseAiFeatures = isAiFeatureConfigured({
     enableAI,
     apiKey,
@@ -120,41 +114,34 @@ const App: React.FC = () => {
 
   const balanceStatus = getBalanceStatus(overview?.balance || 0, t);
 
-  // --- Handlers ---
-  const handleCalculateRecharge = async () => {
-      if (!overview || !canUseAiFeatures) return;
-      setIsCalcLoading(true);
-      setCalcResult('');
-      
-      try {
-        const res = await generateRechargePlan({
-          aiClient: aiService,
-          ai: {
-            apiKey,
-            aiBaseUrl,
-            aiProvider,
-            aiModel,
-          },
-          lang,
-          overview,
-          trends,
-          daysToCover,
-          roommates,
-        });
-        setCalcResult(res);
-
-      } catch (e: any) {
-          setCalcResult("Error: " + e.message);
-      } finally {
-          setIsCalcLoading(false);
-      }
-  };
-
   const chartData = prepareTrendChartData({
     trends,
     chartDate,
     lang,
     estimatedTodayLabel: t.estimatedToday,
+  });
+  const {
+    showCalculator,
+    openCalculator,
+    closeCalculator,
+    roommates,
+    setRoommates,
+    daysToCover,
+    setDaysToCover,
+    calcResult,
+    isCalcLoading,
+    handleCalculateRecharge,
+  } = useRechargeCalculator({
+    canUseAiFeatures,
+    ai: {
+      apiKey,
+      aiBaseUrl,
+      aiProvider,
+      aiModel,
+    },
+    lang,
+    overview,
+    trends,
   });
 
   if (!isLoggedIn) {
@@ -179,8 +166,8 @@ const App: React.FC = () => {
         onToggleLang={() => setLang((current) => current === Language.ZH ? Language.EN : Language.ZH)}
         onToggleTheme={() => setIsDark(!isDark)}
         onShowCloudAuth={() => setShowCloudAuth(true)}
-        onShowServerConfig={() => setShowServerConfig(true)}
-        onHideServerConfig={() => setShowServerConfig(false)}
+        onShowServerConfig={openServerConfig}
+        onHideServerConfig={closeServerConfig}
         onCustomApiUrlChange={setCustomApiUrl}
         onLoginRoomChange={setLoginRoom}
         onLogin={handleLogin}
@@ -195,60 +182,72 @@ const App: React.FC = () => {
   return (
     <AppShell
       labels={t}
-      room={overview?.room}
-      weather={weather}
-      isLoading={isLoading}
-      activeTab={activeTab}
-      onSetActiveTab={setActiveTab}
-      onRefresh={handleRefresh}
-      onLogout={handleLogout}
-      isCalculatorOpen={showCalculator}
-      balance={overview?.balance || 0}
-      formatMoney={formatMoney}
-      roommates={roommates}
-      daysToCover={daysToCover}
-      canCalculateRecharge={canUseAiFeatures}
-      isCalcLoading={isCalcLoading}
-      calcResult={calcResult}
-      onCloseCalculator={() => setShowCalculator(false)}
-      onRoommatesChange={setRoommates}
-      onDaysToCoverChange={setDaysToCover}
-      onCalculateRecharge={handleCalculateRecharge}
-      overview={overview}
-      dailyBrief={dailyBrief}
-      displayUnit={displayUnit}
-      totalSubsidyMoney={totalSubsidyMoney}
-      balanceStatus={balanceStatus}
-      onSetDisplayUnit={setDisplayUnit}
-      onOpenCalculator={() => setShowCalculator(true)}
-      chartDate={chartDate}
-      chartData={chartData}
-      isDark={isDark}
-      enableAI={enableAI}
-      trendAnalysis={trendAnalysis}
-      isTrendAiLoading={isTrendAiLoading}
-      onChangeMonth={changeMonth}
-      onGenerateAnalysis={handleTrendAnalysis}
-      onResetAnalysis={() => setTrendAnalysis('')}
-      records={records}
-      lang={lang}
-      currency={currency}
-      aiProvider={aiProvider}
-      apiKey={apiKey}
-      aiModel={aiModel}
-      aiBaseUrl={aiBaseUrl}
-      showAdvancedSettings={showAdvancedSettings}
-      customApiUrl={customApiUrl}
-      onSetLang={(value) => setLang(value === 'zh' ? Language.ZH : Language.EN)}
-      onToggleDarkMode={() => setIsDark(!isDark)}
-      onSetCurrency={setCurrency}
-      onToggleAI={() => setEnableAI(!enableAI)}
-      onSetAiProvider={setAiProvider}
-      onSetApiKey={setApiKey}
-      onSetAiModel={setAiModel}
-      onSetAiBaseUrl={setAiBaseUrl}
-      onToggleAdvancedSettings={() => setShowAdvancedSettings(!showAdvancedSettings)}
-      onSetCustomApiUrl={setCustomApiUrl}
+      navigation={{
+        room: overview?.room,
+        weather,
+        isLoading,
+        activeTab,
+        onSetActiveTab: setActiveTab,
+        onRefresh: handleRefresh,
+        onLogout: handleLogout,
+      }}
+      calculator={{
+        isOpen: showCalculator,
+        balance: overview?.balance || 0,
+        formatMoney,
+        roommates,
+        daysToCover,
+        canCalculate: canUseAiFeatures,
+        isCalcLoading,
+        calcResult,
+        onClose: closeCalculator,
+        onRoommatesChange: setRoommates,
+        onDaysToCoverChange: setDaysToCover,
+        onCalculate: handleCalculateRecharge,
+      }}
+      content={{
+        activeTab,
+        weather,
+        isLoading,
+        onRefresh: handleRefresh,
+        overview,
+        dailyBrief,
+        displayUnit,
+        totalSubsidyMoney,
+        balanceStatus,
+        formatMoney,
+        onSetDisplayUnit: setDisplayUnit,
+        onOpenCalculator: openCalculator,
+        chartDate,
+        chartData,
+        isDark,
+        enableAI,
+        trendAnalysis,
+        isTrendAiLoading,
+        onChangeMonth: changeMonth,
+        onGenerateAnalysis: handleTrendAnalysis,
+        onResetAnalysis: () => setTrendAnalysis(''),
+        records,
+        lang,
+        currency,
+        aiProvider,
+        apiKey,
+        aiModel,
+        aiBaseUrl,
+        showAdvancedSettings,
+        customApiUrl,
+        onSetLang: (value) => setLang(value === 'zh' ? Language.ZH : Language.EN),
+        onToggleDarkMode: () => setIsDark(!isDark),
+        onSetCurrency: setCurrency,
+        onToggleAI: () => setEnableAI(!enableAI),
+        onSetAiProvider: setAiProvider,
+        onSetApiKey: setApiKey,
+        onSetAiModel: setAiModel,
+        onSetAiBaseUrl: setAiBaseUrl,
+        onToggleAdvancedSettings: toggleAdvancedSettings,
+        onSetCustomApiUrl: setCustomApiUrl,
+        onLogout: handleLogout,
+      }}
     />
   );
 };

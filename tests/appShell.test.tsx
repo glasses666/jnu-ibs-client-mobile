@@ -67,64 +67,76 @@ test('AppShell composes navigation, calculator modal, and main content for a log
   const html = renderToStaticMarkup(
     <AppShell
       labels={labels}
-      room={overview.room}
-      weather={null}
-      isLoading={false}
-      activeTab="overview"
-      onSetActiveTab={() => {}}
-      onRefresh={() => {}}
-      onLogout={() => {}}
-      isCalculatorOpen={false}
-      balance={overview.balance}
-      formatMoney={(value) => `¥${value.toFixed(2)}`}
-      roommates={4}
-      daysToCover={30}
-      canCalculateRecharge={true}
-      isCalcLoading={false}
-      calcResult=""
-      onCloseCalculator={() => {}}
-      onRoommatesChange={() => {}}
-      onDaysToCoverChange={() => {}}
-      onCalculateRecharge={() => {}}
-      overview={overview}
-      dailyBrief="Remember to save energy."
-      displayUnit="money"
-      totalSubsidyMoney={24.13}
-      balanceStatus={{
-        textClass: 'text-white',
-        statusText: 'Healthy',
-        dotClass: 'bg-green-400',
+      navigation={{
+        room: overview.room,
+        weather: null,
+        isLoading: false,
+        activeTab: 'overview',
+        onSetActiveTab: () => {},
+        onRefresh: () => {},
+        onLogout: () => {},
       }}
-      onSetDisplayUnit={() => {}}
-      onOpenCalculator={() => {}}
-      chartDate={new Date('2026-03-01T00:00:00Z')}
-      chartData={[{ name: '3/28 (Est.)', elec: 6.7, cold: 0.7, hot: 0.2, isEstimate: true }]}
-      isDark={false}
-      enableAI={true}
-      trendAnalysis=""
-      isTrendAiLoading={false}
-      onChangeMonth={() => {}}
-      onGenerateAnalysis={() => {}}
-      onResetAnalysis={() => {}}
-      records={[]}
-      lang="en"
-      currency="CNY"
-      aiProvider="google"
-      apiKey="sk-demo"
-      aiModel="gemini-2.5-flash"
-      aiBaseUrl=""
-      showAdvancedSettings={false}
-      customApiUrl=""
-      onSetLang={() => {}}
-      onToggleDarkMode={() => {}}
-      onSetCurrency={() => {}}
-      onToggleAI={() => {}}
-      onSetAiProvider={() => {}}
-      onSetApiKey={() => {}}
-      onSetAiModel={() => {}}
-      onSetAiBaseUrl={() => {}}
-      onToggleAdvancedSettings={() => {}}
-      onSetCustomApiUrl={() => {}}
+      calculator={{
+        isOpen: false,
+        balance: overview.balance,
+        formatMoney: (value) => `¥${value.toFixed(2)}`,
+        roommates: 4,
+        daysToCover: 30,
+        canCalculate: true,
+        isCalcLoading: false,
+        calcResult: '',
+        onClose: () => {},
+        onRoommatesChange: () => {},
+        onDaysToCoverChange: () => {},
+        onCalculate: () => {},
+      }}
+      content={{
+        activeTab: 'overview',
+        weather: null,
+        isLoading: false,
+        onRefresh: () => {},
+        overview,
+        dailyBrief: 'Remember to save energy.',
+        displayUnit: 'money',
+        totalSubsidyMoney: 24.13,
+        balanceStatus: {
+          textClass: 'text-white',
+          statusText: 'Healthy',
+          dotClass: 'bg-green-400',
+        },
+        formatMoney: (value) => `¥${value.toFixed(2)}`,
+        onSetDisplayUnit: () => {},
+        onOpenCalculator: () => {},
+        chartDate: new Date('2026-03-01T00:00:00Z'),
+        chartData: [{ name: '3/28 (Est.)', elec: 6.7, cold: 0.7, hot: 0.2, isEstimate: true }],
+        isDark: false,
+        enableAI: true,
+        trendAnalysis: '',
+        isTrendAiLoading: false,
+        onChangeMonth: () => {},
+        onGenerateAnalysis: () => {},
+        onResetAnalysis: () => {},
+        records: [],
+        lang: 'en',
+        currency: 'CNY',
+        aiProvider: 'google',
+        apiKey: 'sk-demo',
+        aiModel: 'gemini-2.5-flash',
+        aiBaseUrl: '',
+        showAdvancedSettings: false,
+        customApiUrl: '',
+        onSetLang: () => {},
+        onToggleDarkMode: () => {},
+        onSetCurrency: () => {},
+        onToggleAI: () => {},
+        onSetAiProvider: () => {},
+        onSetApiKey: () => {},
+        onSetAiModel: () => {},
+        onSetAiBaseUrl: () => {},
+        onToggleAdvancedSettings: () => {},
+        onSetCustomApiUrl: () => {},
+        onLogout: () => {},
+      }}
     />
   );
 
