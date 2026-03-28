@@ -1,5 +1,5 @@
-import { EnergyType } from './types';
-import { appConfig } from './config/appConfig';
+import { EnergyType } from './types.js';
+import { appConfig } from './config/appConfig.js';
 
 // ABSOLUTE URL for Native Android App (CapacitorHttp handles CORS)
 export const API_BASE_URL = appConfig.apiBaseUrl;

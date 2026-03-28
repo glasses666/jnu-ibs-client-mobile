@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../constants';
-import { appConfig } from '../config/appConfig';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../constants.js';
+import { appConfig } from '../config/appConfig.js';
 
 // Create a single Supabase client for interacting with your database
 export const isCloudAuthEnabled = appConfig.cloudAuthEnabled;

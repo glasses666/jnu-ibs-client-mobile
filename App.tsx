@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { ibsService } from './services/ibsService';
+import React, { useState } from 'react';
 import { aiService } from './services/geminiService';
-import { saveConfig, StorageKeys } from './services/storageService';
-import { Language, AIProvider } from './types';
+import { Language } from './types';
 import { LABELS, API_BASE_URL } from './constants';
-import { RefreshCw } from 'lucide-react';
 
-import { CloudAuth } from './components/CloudAuth';
-import { RoomBinding } from './components/RoomBinding';
-import { AuthLoadingScreen } from './components/AuthLoadingScreen';
-import { LoginScreen } from './components/LoginScreen';
+import { AuthGate } from './components/AuthGate';
+import { DesktopPageHeader } from './components/DesktopPageHeader';
 import { RechargeCalculatorModal } from './components/RechargeCalculatorModal';
 import { SettingsPanel } from './components/SettingsPanel';
 import { OverviewContent } from './components/OverviewContent';
@@ -31,28 +26,34 @@ import {
   calculateRechargePlanInputs,
   createRechargePrompt,
 } from './utils/rechargePlanner';
-import {
-  createPersistedAiConfig,
-  getCompatibleModelForProvider,
-  loadPersistedPreferences,
-} from './utils/appPreferences';
 import { useAppSession } from './hooks/useAppSession';
+import { useAppPreferences } from './hooks/useAppPreferences';
 
 const App: React.FC = () => {
-  // --- State ---
-  const [isDark, setIsDark] = useState(false);
-  const [lang, setLang] = useState<Language>(Language.ZH);
-  
-  // Settings State
-  const [enableAI, setEnableAI] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [aiBaseUrl, setAiBaseUrl] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>('google');
-  const [aiModel, setAiModel] = useState('gemini-2.5-flash');
+  const {
+    isDark,
+    setIsDark,
+    lang,
+    setLang,
+    enableAI,
+    setEnableAI,
+    apiKey,
+    setApiKey,
+    aiBaseUrl,
+    setAiBaseUrl,
+    aiProvider,
+    setAiProvider,
+    aiModel,
+    setAiModel,
+    currency,
+    setCurrency,
+    customApiUrl,
+    setCustomApiUrl,
+    isConfigLoaded,
+  } = useAppPreferences();
 
   // UI Toggles
   const [displayUnit, setDisplayUnit] = useState<'money' | 'unit'>('money'); 
-  const [currency, setCurrency] = useState<'CNY' | 'USD'>('CNY'); 
   const [showCalculator, setShowCalculator] = useState(false); 
 
   // AI & Calculator State
@@ -61,62 +62,10 @@ const App: React.FC = () => {
   const [calcResult, setCalcResult] = useState('');
   const [isCalcLoading, setIsCalcLoading] = useState(false);
   
-  const [isConfigLoaded, setIsConfigLoaded] = useState(false); 
-  const [customApiUrl, setCustomApiUrl] = useState('');
   const [showServerConfig, setShowServerConfig] = useState(false); 
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   
   const t = LABELS[lang];
-  // --- Initialization (Persistence) ---
-  useEffect(() => {
-    const init = async () => {
-      const persisted = await loadPersistedPreferences();
-
-      setIsDark(persisted.isDark);
-      setLang(persisted.lang);
-      setEnableAI(persisted.ai.enableAI);
-      setApiKey(persisted.ai.apiKey);
-      setAiProvider(persisted.ai.aiProvider);
-      setAiBaseUrl(persisted.ai.aiBaseUrl);
-      setAiModel(persisted.ai.aiModel);
-      setCurrency(persisted.currency);
-      setCustomApiUrl(persisted.customApiUrl);
-      setIsConfigLoaded(true);
-    };
-    init();
-  }, []);
-
-  // Save config on changes
-  useEffect(() => { saveConfig(StorageKeys.THEME, isDark ? 'dark' : 'light'); }, [isDark]);
-  useEffect(() => { saveConfig(StorageKeys.LANG, lang); }, [lang]);
-  useEffect(() => { saveConfig(StorageKeys.CURRENCY, currency); }, [currency]); 
-  useEffect(() => { 
-      saveConfig(StorageKeys.CUSTOM_API_URL, customApiUrl);
-      ibsService.setBaseUrl(customApiUrl);
-  }, [customApiUrl]);
-  useEffect(() => { 
-      saveConfig(StorageKeys.AI_CONFIG, createPersistedAiConfig({
-        enableAI,
-        apiKey,
-        aiBaseUrl,
-        aiProvider,
-        aiModel,
-      })); 
-  }, [enableAI, apiKey, aiBaseUrl, aiProvider, aiModel]);
-
-  // Apply Theme
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
-
-  // Handle Provider Defaults
-  useEffect(() => {
-    setAiModel((current) => getCompatibleModelForProvider(aiProvider, current));
-  }, [aiProvider]);
 
   const {
     session: {
@@ -209,39 +158,21 @@ const App: React.FC = () => {
     estimatedTodayLabel: t.estimatedToday,
   });
 
-  // --- Render Login ---
-  if (isAutoLoggingIn) {
-      return <AuthLoadingScreen userName={userName} />;
-  }
-
   if (!isLoggedIn) {
-    if (showBinding) {
-        return (
-            <RoomBinding 
-                userId={currentUserId}
-                onBindSuccess={handleBindingSuccess}
-            />
-        );
-    }
-
-    if (showCloudAuth && isCloudAuthEnabled && supabase) {
-        return (
-            <CloudAuth 
-                onLoginSuccess={handleCloudAuthSuccess}
-                onAdminLogin={() => {
-                    alert("管理员通道已激活");
-                }}
-            />
-        );
-    }
-
     return (
-      <LoginScreen
+      <AuthGate
         labels={t}
         apiBaseUrl={API_BASE_URL}
+        isLoggedIn={isLoggedIn}
         isCloudAuthEnabled={isCloudAuthEnabled}
+        canUseCloudAuth={Boolean(supabase)}
         isDark={isDark}
         isLoading={isLoading}
+        isAutoLoggingIn={isAutoLoggingIn}
+        showBinding={showBinding}
+        showCloudAuth={showCloudAuth}
+        userName={userName}
+        currentUserId={currentUserId}
         loginRoom={loginRoom}
         errorMsg={errorMsg}
         customApiUrl={customApiUrl}
@@ -255,6 +186,8 @@ const App: React.FC = () => {
         onLoginRoomChange={setLoginRoom}
         onLogin={handleLogin}
         onEnterDemoMode={enterDemoMode}
+        onBindingSuccess={handleBindingSuccess}
+        onCloudAuthSuccess={handleCloudAuthSuccess}
       />
     );
   }
@@ -297,30 +230,13 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 lg:pl-80 pt-14 lg:pt-0 pb-28 lg:pb-8 overflow-y-auto no-scrollbar">
         <div className="p-5 md:p-10 max-w-6xl mx-auto min-h-full">
-          
-          <header className="hidden lg:flex justify-between items-end mb-10 pt-4">
-              <div>
-                <h2 className="text-4xl font-black tracking-tighter text-gray-900 dark:text-white">{t[activeTab]}</h2>
-                <div className="flex items-center gap-3 mt-2">
-                    <p className="text-gray-400 font-medium">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    {weather && (
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-500 dark:text-gray-400">
-                            <span>{weather.place}</span>
-                            <span>{weather.weather}</span>
-                            <span>{weather.temperature}°C</span>
-                        </div>
-                    )}
-                </div>
-              </div>
-              
-              <button 
-                onClick={handleRefresh}
-                className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-gray-500 hover:text-primary border border-gray-100 dark:border-gray-700 shadow-sm transition-all"
-              >
-                  <RefreshCw size={18} className={`transition-transform duration-700 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180'}`} />
-                  <span className="font-bold text-xs uppercase tracking-wider">{t.refresh}</span>
-              </button>
-          </header>
+          <DesktopPageHeader
+            title={t[activeTab]}
+            refreshLabel={t.refresh}
+            isLoading={isLoading}
+            weather={weather}
+            onRefresh={handleRefresh}
+          />
 
           {activeTab === 'overview' && (
               <OverviewContent

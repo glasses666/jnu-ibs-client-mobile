@@ -10,7 +10,7 @@ import {
   Chrome,
   AlertCircle
 } from 'lucide-react';
-import { supabase } from '../services/supabaseClient';
+import { supabase } from '../services/supabaseClient.js';
 
 interface CloudAuthProps {
   onLoginSuccess: (user: any) => void;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Home, Save, ArrowRight, CheckCircle } from 'lucide-react';
-import { supabase } from '../services/supabaseClient';
+import { supabase } from '../services/supabaseClient.js';
 
 interface RoomBindingProps {
   userId: string;
