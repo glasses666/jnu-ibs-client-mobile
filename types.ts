@@ -86,6 +86,8 @@ export enum Language {
   EN = 'en'
 }
 
+export type ActiveTab = 'overview' | 'trends' | 'records' | 'settings';
+
 export type AIProvider = 'google' | 'openai';
 
 export interface AppConfig {

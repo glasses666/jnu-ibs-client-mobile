@@ -1,6 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { OverviewData, MetricalDataResult, Language, AIProvider } from "../types";
+import { OverviewData, MetricalDataResult, Language, AIProvider } from "../types.js";
 
 export class AIService {
   private googleClient: GoogleGenAI | null = null;
@@ -24,52 +24,6 @@ export class AIService {
             options.baseUrl = this.baseUrl;
         }
         this.googleClient = new GoogleGenAI(options);
-    }
-  }
-
-  async generateSummary(
-    overview: OverviewData, 
-    trends: MetricalDataResult[], 
-    lang: Language
-  ): Promise<string> {
-    if (!this.apiKey) {
-      throw new Error("API Key missing. Please configure it in Settings.");
-    }
-
-    const dataContext = JSON.stringify({
-      balance: overview.balance,
-      costs: overview.costs,
-      usage: overview.details,
-      subsidy: overview.subsidy, // Included subsidy info
-      trends: trends.map(t => ({
-        type: t.energyType, // 2=Elec, 3=Cold, 4=Hot
-        points: t.datas.length 
-      }))
-    });
-
-    const langInstruction = lang === Language.ZH 
-      ? "请用中文回答。语气亲切专业。请务必使用 Markdown 格式（例如用 **粗体** 标注关键数字），并搭配适量 Emoji 🌟。" 
-      : "Please answer in English. Use Markdown (e.g. **bold** numbers) and Emojis 🌟.";
-
-    const systemPrompt = `
-      You are an energy efficiency assistant for a university student living in a dorm.
-      Task:
-      1. Analyze the current month's financial status and usage mix.
-      2. Identify the main cost driver.
-      3. Provide 3 specific, actionable money-saving tips.
-      Format: Use Markdown bullet points. Keep it structured and concise.
-    `;
-
-    const userPrompt = `
-      ${langInstruction}
-      Data:
-      ${dataContext}
-    `;
-
-    if (this.provider === 'google') {
-        return this.callGoogleGemini(systemPrompt + "\n" + userPrompt);
-    } else {
-        return this.callOpenAICompatible(systemPrompt, userPrompt);
     }
   }
 

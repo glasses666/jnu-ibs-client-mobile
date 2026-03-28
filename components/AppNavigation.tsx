@@ -12,8 +12,9 @@ import {
 } from 'lucide-react';
 
 import type { WeatherData } from '../services/weatherService';
+import type { ActiveTab } from '../types';
 
-export type ActiveTab = 'overview' | 'trends' | 'records' | 'settings';
+export type { ActiveTab } from '../types';
 
 type NavigationLabels = {
   dashboard: string;
