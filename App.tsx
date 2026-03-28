@@ -4,12 +4,8 @@ import { Language } from './types';
 import { LABELS, API_BASE_URL } from './constants';
 
 import { AuthGate } from './components/AuthGate';
-import { DesktopPageHeader } from './components/DesktopPageHeader';
+import { AppMainContent } from './components/AppMainContent';
 import { RechargeCalculatorModal } from './components/RechargeCalculatorModal';
-import { SettingsPanel } from './components/SettingsPanel';
-import { OverviewContent } from './components/OverviewContent';
-import { RecordsPanel } from './components/RecordsPanel';
-import { TrendsPanel } from './components/TrendsPanel';
 import {
   DesktopSidebar,
   MobileBottomNav,
@@ -230,78 +226,50 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 lg:pl-80 pt-14 lg:pt-0 pb-28 lg:pb-8 overflow-y-auto no-scrollbar">
         <div className="p-5 md:p-10 max-w-6xl mx-auto min-h-full">
-          <DesktopPageHeader
-            title={t[activeTab]}
-            refreshLabel={t.refresh}
-            isLoading={isLoading}
+          <AppMainContent
+            labels={t}
+            activeTab={activeTab}
             weather={weather}
+            isLoading={isLoading}
             onRefresh={handleRefresh}
+            overview={overview}
+            dailyBrief={dailyBrief}
+            displayUnit={displayUnit}
+            totalSubsidyMoney={totalSubsidyMoney}
+            balanceStatus={balanceStatus}
+            formatMoney={formatMoney}
+            onSetDisplayUnit={setDisplayUnit}
+            onOpenCalculator={() => setShowCalculator(true)}
+            chartDate={chartDate}
+            chartData={chartData}
+            isDark={isDark}
+            enableAI={enableAI}
+            trendAnalysis={trendAnalysis}
+            isTrendAiLoading={isTrendAiLoading}
+            onChangeMonth={changeMonth}
+            onGenerateAnalysis={handleTrendAnalysis}
+            onResetAnalysis={() => setTrendAnalysis('')}
+            records={records}
+            lang={lang}
+            currency={currency}
+            aiProvider={aiProvider}
+            apiKey={apiKey}
+            aiModel={aiModel}
+            aiBaseUrl={aiBaseUrl}
+            showAdvancedSettings={showAdvancedSettings}
+            customApiUrl={customApiUrl}
+            onSetLang={(value) => setLang(value === 'zh' ? Language.ZH : Language.EN)}
+            onToggleDarkMode={() => setIsDark(!isDark)}
+            onSetCurrency={setCurrency}
+            onToggleAI={() => setEnableAI(!enableAI)}
+            onSetAiProvider={setAiProvider}
+            onSetApiKey={setApiKey}
+            onSetAiModel={setAiModel}
+            onSetAiBaseUrl={setAiBaseUrl}
+            onToggleAdvancedSettings={() => setShowAdvancedSettings(!showAdvancedSettings)}
+            onSetCustomApiUrl={setCustomApiUrl}
+            onLogout={handleLogout}
           />
-
-          {activeTab === 'overview' && (
-              <OverviewContent
-                labels={t}
-                overview={overview}
-                dailyBrief={dailyBrief}
-                displayUnit={displayUnit}
-                totalSubsidyMoney={totalSubsidyMoney}
-                balanceStatus={balanceStatus}
-                formatMoney={formatMoney}
-                onSetDisplayUnit={setDisplayUnit}
-                onOpenCalculator={() => setShowCalculator(true)}
-                onRefresh={handleRefresh}
-              />
-          )}
-
-          {activeTab === 'trends' && (
-              <TrendsPanel
-                labels={t}
-                chartDate={chartDate}
-                chartData={chartData}
-                isDark={isDark}
-                enableAI={enableAI}
-                trendAnalysis={trendAnalysis}
-                isTrendAiLoading={isTrendAiLoading}
-                onChangeMonth={changeMonth}
-                onGenerateAnalysis={handleTrendAnalysis}
-                onResetAnalysis={() => setTrendAnalysis('')}
-              />
-          )}
-
-          {activeTab === 'records' && (
-              <RecordsPanel
-                labels={t}
-                records={records}
-                formatMoney={formatMoney}
-              />
-          )}
-
-          {activeTab === 'settings' && (
-              <SettingsPanel
-                labels={t}
-                lang={lang}
-                isDark={isDark}
-                currency={currency}
-                enableAI={enableAI}
-                aiProvider={aiProvider}
-                apiKey={apiKey}
-                aiModel={aiModel}
-                aiBaseUrl={aiBaseUrl}
-                showAdvancedSettings={showAdvancedSettings}
-                customApiUrl={customApiUrl}
-                onSetLang={(value) => setLang(value === 'zh' ? Language.ZH : Language.EN)}
-                onToggleDarkMode={() => setIsDark(!isDark)}
-                onSetCurrency={setCurrency}
-                onToggleAI={() => setEnableAI(!enableAI)}
-                onSetAiProvider={setAiProvider}
-                onSetApiKey={setApiKey}
-                onSetAiModel={setAiModel}
-                onSetAiBaseUrl={setAiBaseUrl}
-                onToggleAdvancedSettings={() => setShowAdvancedSettings(!showAdvancedSettings)}
-                onSetCustomApiUrl={setCustomApiUrl}
-                onLogout={handleLogout}
-              />
-          )}
 
         </div>
       </main>
