@@ -15,6 +15,7 @@ import { useAppSession } from './hooks/useAppSession';
 import { useAppPreferences } from './hooks/useAppPreferences';
 import { useAppUiState } from './hooks/useAppUiState';
 import { useRechargeCalculator } from './hooks/useRechargeCalculator';
+import { createAppShellProps, createAuthShellProps } from './utils/appShellProps';
 import { isAiFeatureConfigured } from './utils/appPreferences';
 
 const App: React.FC = () => {
@@ -144,112 +145,112 @@ const App: React.FC = () => {
     trends,
   });
 
+  const authShellProps = createAuthShellProps({
+    labels: t,
+    apiBaseUrl: API_BASE_URL,
+    isCloudAuthEnabled,
+    canUseCloudAuth: Boolean(supabase),
+    isDark,
+    customApiUrl,
+    showServerConfig,
+    session: {
+      isLoggedIn,
+      isLoading,
+      isAutoLoggingIn,
+      showBinding,
+      showCloudAuth,
+      userName,
+      currentUserId,
+      loginRoom,
+      errorMsg,
+    },
+    setLang,
+    setIsDark,
+    setShowCloudAuth,
+    openServerConfig,
+    closeServerConfig,
+    setCustomApiUrl,
+    setLoginRoom,
+    handleLogin,
+    enterDemoMode,
+    handleBindingSuccess,
+    handleCloudAuthSuccess,
+  });
+
+  const appShellProps = createAppShellProps({
+    labels: t,
+    canUseAiFeatures,
+    preferences: {
+      isDark,
+      lang,
+      enableAI,
+      apiKey,
+      aiBaseUrl,
+      aiProvider,
+      aiModel,
+      currency,
+      customApiUrl,
+      setLang,
+      setIsDark,
+      setEnableAI,
+      setAiProvider,
+      setApiKey,
+      setAiModel,
+      setAiBaseUrl,
+      setCurrency,
+      setCustomApiUrl,
+    },
+    session: {
+      activeTab,
+      chartDate,
+      dailyBrief,
+      isLoading,
+      isTrendAiLoading,
+      overview,
+      records,
+      trendAnalysis,
+      weather,
+    },
+    sessionActions: {
+      setActiveTab,
+      handleRefresh,
+      handleLogout,
+      handleTrendAnalysis,
+      setTrendAnalysis,
+      changeMonth,
+    },
+    ui: {
+      displayUnit,
+      setDisplayUnit,
+      showAdvancedSettings,
+      toggleAdvancedSettings,
+    },
+    calculator: {
+      showCalculator,
+      openCalculator,
+      closeCalculator,
+      roommates,
+      setRoommates,
+      daysToCover,
+      setDaysToCover,
+      calcResult,
+      isCalcLoading,
+      handleCalculateRecharge,
+    },
+    derived: {
+      formatMoney,
+      totalSubsidyMoney,
+      balanceStatus,
+      chartData,
+    },
+  });
+
   if (!isLoggedIn) {
-    return (
-      <AppAuthShell
-        labels={t}
-        apiBaseUrl={API_BASE_URL}
-        isLoggedIn={isLoggedIn}
-        isCloudAuthEnabled={isCloudAuthEnabled}
-        canUseCloudAuth={Boolean(supabase)}
-        isDark={isDark}
-        isLoading={isLoading}
-        isAutoLoggingIn={isAutoLoggingIn}
-        showBinding={showBinding}
-        showCloudAuth={showCloudAuth}
-        userName={userName}
-        currentUserId={currentUserId}
-        loginRoom={loginRoom}
-        errorMsg={errorMsg}
-        customApiUrl={customApiUrl}
-        showServerConfig={showServerConfig}
-        onToggleLang={() => setLang((current) => current === Language.ZH ? Language.EN : Language.ZH)}
-        onToggleTheme={() => setIsDark(!isDark)}
-        onShowCloudAuth={() => setShowCloudAuth(true)}
-        onShowServerConfig={openServerConfig}
-        onHideServerConfig={closeServerConfig}
-        onCustomApiUrlChange={setCustomApiUrl}
-        onLoginRoomChange={setLoginRoom}
-        onLogin={handleLogin}
-        onEnterDemoMode={enterDemoMode}
-        onBindingSuccess={handleBindingSuccess}
-        onCloudAuthSuccess={handleCloudAuthSuccess}
-      />
-    );
+    return <AppAuthShell {...authShellProps} />;
   }
 
   // --- Main App Layout ---
-  return (
-    <AppShell
-      labels={t}
-      navigation={{
-        room: overview?.room,
-        weather,
-        isLoading,
-        activeTab,
-        onSetActiveTab: setActiveTab,
-        onRefresh: handleRefresh,
-        onLogout: handleLogout,
-      }}
-      calculator={{
-        isOpen: showCalculator,
-        balance: overview?.balance || 0,
-        formatMoney,
-        roommates,
-        daysToCover,
-        canCalculate: canUseAiFeatures,
-        isCalcLoading,
-        calcResult,
-        onClose: closeCalculator,
-        onRoommatesChange: setRoommates,
-        onDaysToCoverChange: setDaysToCover,
-        onCalculate: handleCalculateRecharge,
-      }}
-      content={{
-        activeTab,
-        weather,
-        isLoading,
-        onRefresh: handleRefresh,
-        overview,
-        dailyBrief,
-        displayUnit,
-        totalSubsidyMoney,
-        balanceStatus,
-        formatMoney,
-        onSetDisplayUnit: setDisplayUnit,
-        onOpenCalculator: openCalculator,
-        chartDate,
-        chartData,
-        isDark,
-        enableAI,
-        trendAnalysis,
-        isTrendAiLoading,
-        onChangeMonth: changeMonth,
-        onGenerateAnalysis: handleTrendAnalysis,
-        onResetAnalysis: () => setTrendAnalysis(''),
-        records,
-        lang,
-        currency,
-        aiProvider,
-        apiKey,
-        aiModel,
-        aiBaseUrl,
-        showAdvancedSettings,
-        customApiUrl,
-        onSetLang: (value) => setLang(value === 'zh' ? Language.ZH : Language.EN),
-        onToggleDarkMode: () => setIsDark(!isDark),
-        onSetCurrency: setCurrency,
-        onToggleAI: () => setEnableAI(!enableAI),
-        onSetAiProvider: setAiProvider,
-        onSetApiKey: setApiKey,
-        onSetAiModel: setAiModel,
-        onSetAiBaseUrl: setAiBaseUrl,
-        onToggleAdvancedSettings: toggleAdvancedSettings,
-        onSetCustomApiUrl: setCustomApiUrl,
-        onLogout: handleLogout,
-      }}
-    />
-  );
+  return <AppShell {...appShellProps} />;
 };
 
 export default App;
